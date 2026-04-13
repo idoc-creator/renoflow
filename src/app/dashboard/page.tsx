@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import Link from "next/link";
 import { FiPlus, FiFolder } from "react-icons/fi";
+import { NewProjectButton } from "@/components/NewProjectButton";
 
 export default async function DashboardPage() {
   const supabase = await createClient();
@@ -10,6 +11,8 @@ export default async function DashboardPage() {
 
   // Fetch user's projects (will be empty until projects table exists)
   let projects: { id: string; name: string; updated_at: string }[] = [];
+  let tier = "free";
+
   if (user) {
     const { data } = await supabase
       .from("projects")
@@ -20,6 +23,17 @@ export default async function DashboardPage() {
     if (data) {
       projects = data;
     }
+
+    // Fetch subscription tier
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("subscription_tier")
+      .eq("id", user.id)
+      .single();
+
+    if (profile?.subscription_tier) {
+      tier = profile.subscription_tier;
+    }
   }
 
   return (
@@ -27,13 +41,7 @@ export default async function DashboardPage() {
       {/* Header */}
       <div className="mb-6 flex items-center justify-between">
         <h1 className="text-2xl font-bold text-slate-900">Projects</h1>
-        <Link
-          href="/dashboard/projects/new"
-          className="inline-flex items-center gap-2 rounded-lg bg-teal-600 px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-teal-700"
-        >
-          <FiPlus className="h-4 w-4" />
-          New Project
-        </Link>
+        <NewProjectButton projectCount={projects.length} tier={tier} />
       </div>
 
       {/* Projects grid or empty state */}
