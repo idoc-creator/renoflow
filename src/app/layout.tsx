@@ -10,7 +10,19 @@ const inter = Inter({
 export const metadata: Metadata = {
   title: "RenoFlow — Plan Your DIY Renovation",
   description:
-    "Plan your DIY renovation, save thousands, and earn money sharing your build.",
+    "AI-powered renovation planning. Break your project into stages, track savings, and earn money sharing your build. Start free.",
+  keywords: [
+    "DIY renovation",
+    "home remodel planner",
+    "renovation cost estimator",
+    "DIY project planner",
+  ],
+  openGraph: {
+    title: "RenoFlow — Plan Your DIY Renovation",
+    description:
+      "AI-powered renovation planning. Save thousands doing it yourself.",
+    type: "website",
+  },
 };
 
 export default function RootLayout({
