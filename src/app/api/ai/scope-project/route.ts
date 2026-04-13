@@ -115,31 +115,20 @@ Create a realistic plan with proper staging, honest cost estimates, and clear st
     const response = await client.messages.create({
       model: "claude-sonnet-4-6",
       max_tokens: 16000,
-      thinking: {
-        type: "enabled",
-        budget_tokens: 10000,
-      },
+      thinking: { type: "adaptive" },
       system: SYSTEM_PROMPT,
+      output_config: {
+        format: {
+          type: "json_schema",
+          schema: JSON_SCHEMA,
+        },
+      },
       messages: [{ role: "user", content: userMessage }],
     });
 
-    // Extract the text content (skip thinking blocks)
-    let textContent = "";
-    for (const block of response.content) {
-      if (block.type === "text") {
-        textContent = block.text;
-      }
-    }
-
-    // Parse the JSON from the response
-    // Claude may wrap it in markdown code fences
-    let jsonStr = textContent;
-    const fenceMatch = jsonStr.match(/```(?:json)?\s*\n?([\s\S]*?)\n?```/);
-    if (fenceMatch) {
-      jsonStr = fenceMatch[1];
-    }
-
-    const parsed = JSON.parse(jsonStr.trim());
+    // With structured output, the text block contains valid JSON directly
+    const textBlock = response.content.find((b) => b.type === "text");
+    const parsed = JSON.parse(textBlock!.text);
 
     // Stream the response back to the client
     const encoder = new TextEncoder();
