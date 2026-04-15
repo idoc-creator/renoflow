@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Inter, Instrument_Serif } from "next/font/google";
 import "./globals.css";
 
 const inter = Inter({
@@ -7,20 +7,28 @@ const inter = Inter({
   subsets: ["latin"],
 });
 
+const instrumentSerif = Instrument_Serif({
+  weight: "400",
+  variable: "--font-instrument-serif",
+  subsets: ["latin"],
+});
+
 export const metadata: Metadata = {
-  title: "RenoFlow — Plan Your DIY Renovation",
+  title: "Bench — Stop Pinning. Start Building.",
   description:
-    "AI-powered renovation planning. Break your project into stages, track savings, and earn money sharing your build. Start free.",
+    "The platform where DIYers browse inspo, grab templates, plan projects, and build the thing. From bathroom remodels to handmade jewelry.",
   keywords: [
-    "DIY renovation",
-    "home remodel planner",
-    "renovation cost estimator",
-    "DIY project planner",
+    "DIY",
+    "maker",
+    "home improvement",
+    "craft projects",
+    "project planner",
+    "build templates",
   ],
   openGraph: {
-    title: "RenoFlow — Plan Your DIY Renovation",
+    title: "Bench — Stop Pinning. Start Building.",
     description:
-      "AI-powered renovation planning. Save thousands doing it yourself.",
+      "Browse, plan, build, and share DIY projects of every kind.",
     type: "website",
   },
 };
@@ -31,8 +39,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${inter.variable} h-full antialiased`}>
-      <body className="min-h-full flex flex-col font-sans">
+    <html
+      lang="en"
+      className={`${inter.variable} ${instrumentSerif.variable} h-full antialiased`}
+    >
+      <body className="min-h-full flex flex-col font-sans bg-cream text-charcoal">
         {children}
         <script
           dangerouslySetInnerHTML={{
