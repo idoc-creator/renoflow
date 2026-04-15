@@ -1,40 +1,32 @@
-export type Tier = "free" | "plan_it" | "build_it";
+// Tier system for future Pro features. Builders are always free — unlimited
+// projects and unlimited mood board items. The tier system exists for future
+// Pro-only features like advanced analytics, priority AI, bulk export.
 
-const TIER_LIMITS = {
+export type Tier = "free" | "pro";
+
+const TIER_FEATURES = {
   free: {
-    maxProjects: 1,
-    maxMoodBoardItems: 20,
-    hasCalculators: false,
-    hasPermitHelper: false,
+    hasAdvancedAnalytics: false,
+    hasPriorityAI: false,
+    hasBulkExport: false,
   },
-  plan_it: {
-    maxProjects: Infinity,
-    maxMoodBoardItems: Infinity,
-    hasCalculators: true,
-    hasPermitHelper: false,
-  },
-  build_it: {
-    maxProjects: Infinity,
-    maxMoodBoardItems: Infinity,
-    hasCalculators: true,
-    hasPermitHelper: true,
+  pro: {
+    hasAdvancedAnalytics: true,
+    hasPriorityAI: true,
+    hasBulkExport: true,
   },
 };
 
-export function getTierLimits(tier: Tier) {
-  return TIER_LIMITS[tier] || TIER_LIMITS.free;
+export function getTierFeatures(tier: Tier) {
+  return TIER_FEATURES[tier] || TIER_FEATURES.free;
 }
 
-export function canCreateProject(
-  tier: Tier,
-  currentProjectCount: number
-): boolean {
-  return currentProjectCount < getTierLimits(tier).maxProjects;
+// Builders get unlimited everything — Bench makes money from the economy
+// (template sales, affiliate commissions), not from limiting builders.
+export function canCreateProject(): boolean {
+  return true;
 }
 
-export function canAddMoodBoardItem(
-  tier: Tier,
-  currentItemCount: number
-): boolean {
-  return currentItemCount < getTierLimits(tier).maxMoodBoardItems;
+export function canAddMoodBoardItem(): boolean {
+  return true;
 }

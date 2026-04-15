@@ -3,8 +3,6 @@
 import { useState } from "react";
 import { FiPlus, FiImage, FiExternalLink } from "react-icons/fi";
 import { AddProductModal } from "@/components/project/AddProductModal";
-import { UpgradeModal } from "@/components/UpgradeModal";
-import { canAddMoodBoardItem, type Tier } from "@/lib/tier";
 
 interface MoodBoardItem {
   id: string;
@@ -20,28 +18,21 @@ interface MoodBoardItem {
 interface MoodBoardClientProps {
   projectId: string;
   initialItems: MoodBoardItem[];
-  tier?: Tier;
 }
 
 export function MoodBoardClient({
   projectId,
   initialItems,
-  tier = "free",
 }: MoodBoardClientProps) {
   const [items, setItems] = useState(initialItems);
   const [showModal, setShowModal] = useState(false);
-  const [showUpgrade, setShowUpgrade] = useState(false);
 
   function handleAdded(item: MoodBoardItem) {
     setItems((prev) => [...prev, item]);
   }
 
   function handleAddClick() {
-    if (!canAddMoodBoardItem(tier, items.length)) {
-      setShowUpgrade(true);
-    } else {
-      setShowModal(true);
-    }
+    setShowModal(true);
   }
 
   return (
@@ -144,15 +135,6 @@ export function MoodBoardClient({
           onAdded={handleAdded}
         />
       )}
-
-      {/* Upgrade modal */}
-      <UpgradeModal
-        open={showUpgrade}
-        onClose={() => setShowUpgrade(false)}
-        title="Mood board limit reached"
-        message="Free accounts are limited to 20 mood board items. Upgrade to Plan It for unlimited items."
-        suggestedTier="plan_it"
-      />
     </div>
   );
 }

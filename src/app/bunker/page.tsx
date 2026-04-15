@@ -3,36 +3,23 @@ import Link from "next/link";
 import { FiPlus, FiFolder } from "react-icons/fi";
 import { NewProjectButton } from "@/components/NewProjectButton";
 
-export default async function DashboardPage() {
+export default async function BunkerPage() {
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
-  // Fetch user's projects (will be empty until projects table exists)
-  let projects: { id: string; name: string; updated_at: string }[] = [];
-  let tier = "free";
+  let projects: { id: string; name: string; updated_at: string; cover_image_url: string | null }[] = [];
 
   if (user) {
     const { data } = await supabase
       .from("projects")
-      .select("id, name, updated_at")
+      .select("id, name, updated_at, cover_image_url")
       .eq("user_id", user.id)
       .order("updated_at", { ascending: false });
 
     if (data) {
       projects = data;
-    }
-
-    // Fetch subscription tier
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("subscription_tier")
-      .eq("id", user.id)
-      .single();
-
-    if (profile?.subscription_tier) {
-      tier = profile.subscription_tier;
     }
   }
 
@@ -40,8 +27,8 @@ export default async function DashboardPage() {
     <div>
       {/* Header */}
       <div className="mb-6 flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-charcoal">Projects</h1>
-        <NewProjectButton projectCount={projects.length} tier={tier} />
+        <h1 className="font-serif text-3xl text-charcoal">Your Bunker</h1>
+        <NewProjectButton />
       </div>
 
       {/* Projects grid or empty state */}
