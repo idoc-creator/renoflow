@@ -224,7 +224,8 @@ export function StageList({
         stage_id: stageId,
         title: data.title,
         description: data.description,
-        skill_level: data.skill_level,
+        // DB check constraint rejects empty strings — pass null for "not set"
+        skill_level: data.skill_level || null,
         estimated_minutes: data.estimated_minutes,
         tools_needed: data.tools_needed,
         materials_needed: [],
@@ -237,7 +238,8 @@ export function StageList({
       .single();
 
     if (error || !inserted) {
-      alert("Failed to create step.");
+      console.error("Failed to create step:", error);
+      alert(`Failed to create step: ${error?.message ?? "unknown error"}`);
       return;
     }
 
@@ -260,7 +262,8 @@ export function StageList({
       .update({
         title: data.title,
         description: data.description,
-        skill_level: data.skill_level,
+        // DB check constraint rejects empty strings — pass null for "not set"
+        skill_level: data.skill_level || null,
         estimated_minutes: data.estimated_minutes,
         tools_needed: data.tools_needed,
         sub_tasks: data.sub_tasks,
@@ -271,7 +274,8 @@ export function StageList({
       .eq("id", stepId);
 
     if (error) {
-      alert("Failed to save step.");
+      console.error("Failed to save step:", error);
+      alert(`Failed to save step: ${error.message}`);
       return;
     }
 

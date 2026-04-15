@@ -1,7 +1,12 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { createClient } from "@/lib/supabase/server";
 
-const client = new Anthropic();
+// Lazy initialization so a missing env var doesn't crash the module import
+function getAnthropicClient() {
+  const apiKey = process.env.ANTHROPIC_API_KEY;
+  if (!apiKey) return null;
+  return new Anthropic({ apiKey });
+}
 
 const SYSTEM_PROMPT = `You are Bench, a DIY coach helping someone plan the details of a single step in their project. They'll give you a step title (and maybe project context). You return practical, specific content they can use immediately.
 
@@ -33,6 +38,17 @@ const FILL_STEP_SCHEMA = {
 };
 
 export async function POST(request: Request) {
+  const client = getAnthropicClient();
+  if (!client) {
+    return Response.json(
+      {
+        error:
+          "Rough it in is unavailable — ANTHROPIC_API_KEY is not set in .env.local.",
+      },
+      { status: 503 }
+    );
+  }
+
   const supabase = await createClient();
   const {
     data: { user },

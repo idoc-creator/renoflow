@@ -1,7 +1,11 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { createClient } from "@/lib/supabase/server";
 
-const client = new Anthropic();
+function getAnthropicClient() {
+  const apiKey = process.env.ANTHROPIC_API_KEY;
+  if (!apiKey) return null;
+  return new Anthropic({ apiKey });
+}
 
 const SYSTEM_PROMPT = `You are Bench, a helpful assistant for DIY makers working on real projects. You answer questions about home renovation, woodworking, crafts, and general making.
 
@@ -14,6 +18,17 @@ Rules:
 - Never reference "as an AI" — just answer like a knowledgeable friend.`;
 
 export async function POST(request: Request) {
+  const client = getAnthropicClient();
+  if (!client) {
+    return Response.json(
+      {
+        error:
+          "Ask Bench is unavailable — ANTHROPIC_API_KEY is not set in .env.local.",
+      },
+      { status: 503 }
+    );
+  }
+
   const supabase = await createClient();
   const {
     data: { user },

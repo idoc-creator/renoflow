@@ -2,7 +2,11 @@ import Anthropic from "@anthropic-ai/sdk";
 import { createClient } from "@/lib/supabase/server";
 import { insertStagesAndSteps } from "@/lib/projects/insertStagesAndSteps";
 
-const client = new Anthropic();
+function getAnthropicClient() {
+  const apiKey = process.env.ANTHROPIC_API_KEY;
+  if (!apiKey) return null;
+  return new Anthropic({ apiKey });
+}
 
 const SYSTEM_PROMPT = `You are an expert DIY renovation planner and coach. Your job is to draft a practical, staged project plan that a homeowner can actually execute themselves.
 
@@ -75,6 +79,17 @@ const PLAN_SCHEMA = {
 };
 
 export async function POST(request: Request) {
+  const client = getAnthropicClient();
+  if (!client) {
+    return Response.json(
+      {
+        error:
+          "Plan drafting is unavailable — ANTHROPIC_API_KEY is not set in .env.local.",
+      },
+      { status: 503 }
+    );
+  }
+
   const supabase = await createClient();
   const {
     data: { user },
