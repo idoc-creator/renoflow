@@ -50,7 +50,7 @@ export default async function DashboardPage() {
           {projects.map((project) => (
             <Link
               key={project.id}
-              href={`/dashboard/projects/${project.id}`}
+              href={`/bunker/project/${project.id}`}
               className="flex flex-col rounded-xl bg-white p-6 shadow-sm transition-shadow hover:shadow-md"
             >
               <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-lg bg-teal-50">
@@ -79,7 +79,7 @@ export default async function DashboardPage() {
             Start your first renovation plan!
           </p>
           <Link
-            href="/dashboard/projects/new"
+            href="/bunker/project/new"
             className="mt-6 inline-flex items-center gap-2 rounded-lg bg-teal-600 px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-teal-700"
           >
             <FiPlus className="h-4 w-4" />

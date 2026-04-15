@@ -1,6 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
-import { DashboardShell } from "./dashboard-shell";
+import { BunkerShell } from "./bunker-shell";
 
 export default async function DashboardLayout({
   children,
@@ -21,5 +21,5 @@ export default async function DashboardLayout({
     user.email?.split("@")[0] ??
     "User";
 
-  return <DashboardShell displayName={displayName}>{children}</DashboardShell>;
+  return <BunkerShell displayName={displayName}>{children}</BunkerShell>;
 }

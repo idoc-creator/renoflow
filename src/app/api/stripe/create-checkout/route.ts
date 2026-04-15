@@ -62,7 +62,7 @@ export async function POST(request: Request) {
         quantity: 1,
       },
     ],
-    success_url: `${baseUrl}/dashboard?upgraded=true`,
+    success_url: `${baseUrl}/bunker?upgraded=true`,
     cancel_url: `${baseUrl}/pricing`,
     metadata: {
       user_id: user.id,

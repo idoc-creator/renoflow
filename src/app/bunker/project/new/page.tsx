@@ -281,7 +281,7 @@ export default function NewProjectPage() {
       }
 
       const { projectId } = await res.json();
-      router.push(`/dashboard/projects/${projectId}`);
+      router.push(`/bunker/project/${projectId}`);
     } catch (err) {
       setGenError(
         err instanceof Error ? err.message : "Failed to save project"

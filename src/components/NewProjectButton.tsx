@@ -39,7 +39,7 @@ export function NewProjectButton({ projectCount, tier }: NewProjectButtonProps) 
 
   return (
     <Link
-      href="/dashboard/projects/new"
+      href="/bunker/project/new"
       className="inline-flex items-center gap-2 rounded-lg bg-teal-600 px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-teal-700"
     >
       <FiPlus className="h-4 w-4" />

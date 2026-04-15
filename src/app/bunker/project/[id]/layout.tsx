@@ -30,7 +30,7 @@ export default async function ProjectLayout({
     <div className="mx-auto max-w-6xl">
       {/* Back link */}
       <Link
-        href="/dashboard"
+        href="/bunker"
         className="mb-3 inline-flex items-center gap-1.5 text-sm font-medium text-slate-500 transition-colors hover:text-slate-700"
       >
         <FiArrowLeft className="h-4 w-4" />

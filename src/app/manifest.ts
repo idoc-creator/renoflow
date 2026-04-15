@@ -5,7 +5,7 @@ export default function manifest(): MetadataRoute.Manifest {
     name: "RenoFlow",
     short_name: "RenoFlow",
     description: "Plan your DIY renovation",
-    start_url: "/dashboard",
+    start_url: "/bunker",
     display: "standalone",
     background_color: "#f8fafc",
     theme_color: "#0d9488",

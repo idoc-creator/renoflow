@@ -13,12 +13,12 @@ import {
 import { useState } from "react";
 
 const navItems = [
-  { href: "/dashboard", label: "Projects", icon: FiHome },
-  { href: "/dashboard/shopping-list", label: "Shopping List", icon: FiShoppingCart },
-  { href: "/dashboard/earnings", label: "Earnings", icon: FiDollarSign },
+  { href: "/bunker", label: "Projects", icon: FiHome },
+  { href: "/bunker/shopping-list", label: "Shopping List", icon: FiShoppingCart },
+  { href: "/bunker/earnings", label: "Earnings", icon: FiDollarSign },
 ];
 
-export function DashboardShell({
+export function BunkerShell({
   displayName,
   children,
 }: {

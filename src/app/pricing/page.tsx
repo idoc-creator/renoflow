@@ -105,7 +105,7 @@ export default function PricingPage() {
             RenoFlow
           </Link>
           <Link
-            href={currentTier ? "/dashboard" : "/auth/login"}
+            href={currentTier ? "/bunker" : "/auth/login"}
             className="rounded-lg bg-teal-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-teal-700"
           >
             {currentTier ? "Dashboard" : "Sign In"}
