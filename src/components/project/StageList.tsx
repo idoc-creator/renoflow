@@ -5,8 +5,6 @@ import { useRouter } from "next/navigation";
 import {
   FiChevronDown,
   FiChevronRight,
-  FiDollarSign,
-  FiClock,
   FiEdit2,
   FiTrash2,
   FiArrowUp,
@@ -445,14 +443,6 @@ export function StageList({
                     )}
 
                     <div className="mt-3 flex flex-wrap items-center gap-4 text-xs text-warm-gray">
-                      <span className="flex items-center gap-1">
-                        <FiDollarSign className="h-3 w-3" />$
-                        {(stage.estimated_cost || 0).toLocaleString()}
-                      </span>
-                      <span className="flex items-center gap-1">
-                        <FiClock className="h-3 w-3" />
-                        {stage.estimated_hours || 0}h
-                      </span>
                       <span>
                         {completedSteps}/{totalSteps} steps
                       </span>

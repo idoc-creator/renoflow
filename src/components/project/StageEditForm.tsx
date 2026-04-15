@@ -25,15 +25,6 @@ export default function StageEditForm({
 }: StageEditFormProps) {
   const [title, setTitle] = useState(initial?.title ?? "");
   const [description, setDescription] = useState(initial?.description ?? "");
-  const [reason, setReason] = useState(initial?.reason ?? "");
-  const [cost, setCost] = useState<string>(
-    initial?.estimated_cost !== undefined ? String(initial.estimated_cost) : ""
-  );
-  const [hours, setHours] = useState<string>(
-    initial?.estimated_hours !== undefined
-      ? String(initial.estimated_hours)
-      : ""
-  );
   const [saving, setSaving] = useState(false);
 
   async function handleSubmit(e: React.FormEvent) {
@@ -43,9 +34,12 @@ export default function StageEditForm({
     await onSave({
       title: title.trim(),
       description: description.trim(),
-      reason: reason.trim(),
-      estimated_cost: cost ? parseFloat(cost) : 0,
-      estimated_hours: hours ? parseFloat(hours) : 0,
+      // Preserve existing values on edit; default to empty/zero for new stages.
+      // These fields still exist in schema and may be filled by template clones
+      // or the AI draft flow. We just don't collect them in the manual form.
+      reason: initial?.reason ?? "",
+      estimated_cost: initial?.estimated_cost ?? 0,
+      estimated_hours: initial?.estimated_hours ?? 0,
     });
     setSaving(false);
   }
@@ -60,7 +54,7 @@ export default function StageEditForm({
           type="text"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
-          placeholder="e.g., Demo & Prep"
+          placeholder="e.g., Demo"
           required
           className="w-full px-3 py-2 bg-cream rounded-lg border border-border-warm text-sm focus:outline-none focus:border-terracotta"
           autoFocus
@@ -68,57 +62,16 @@ export default function StageEditForm({
       </div>
       <div>
         <label className="block text-xs font-semibold text-charcoal mb-1">
-          What this stage accomplishes
+          Description{" "}
+          <span className="font-normal text-warm-gray">(optional)</span>
         </label>
         <textarea
           value={description}
           onChange={(e) => setDescription(e.target.value)}
-          placeholder="Brief description of what happens in this stage"
+          placeholder="Optional — brief description"
           rows={2}
           className="w-full px-3 py-2 bg-cream rounded-lg border border-border-warm text-sm focus:outline-none focus:border-terracotta"
         />
-      </div>
-      <div>
-        <label className="block text-xs font-semibold text-charcoal mb-1">
-          Why this order
-        </label>
-        <textarea
-          value={reason}
-          onChange={(e) => setReason(e.target.value)}
-          placeholder="Why is this stage sequenced here? (dependencies, livability, etc.)"
-          rows={2}
-          className="w-full px-3 py-2 bg-cream rounded-lg border border-border-warm text-sm focus:outline-none focus:border-terracotta"
-        />
-      </div>
-      <div className="grid grid-cols-2 gap-3">
-        <div>
-          <label className="block text-xs font-semibold text-charcoal mb-1">
-            Estimated cost ($)
-          </label>
-          <input
-            type="number"
-            value={cost}
-            onChange={(e) => setCost(e.target.value)}
-            placeholder="0"
-            min={0}
-            step={1}
-            className="w-full px-3 py-2 bg-cream rounded-lg border border-border-warm text-sm focus:outline-none focus:border-terracotta"
-          />
-        </div>
-        <div>
-          <label className="block text-xs font-semibold text-charcoal mb-1">
-            Estimated hours
-          </label>
-          <input
-            type="number"
-            value={hours}
-            onChange={(e) => setHours(e.target.value)}
-            placeholder="0"
-            min={0}
-            step={0.5}
-            className="w-full px-3 py-2 bg-cream rounded-lg border border-border-warm text-sm focus:outline-none focus:border-terracotta"
-          />
-        </div>
       </div>
       <div className="flex items-center gap-2 pt-1">
         <button
