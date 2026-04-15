@@ -31,7 +31,7 @@ export default async function ProjectLayout({
       {/* Back link */}
       <Link
         href="/bunker"
-        className="mb-3 inline-flex items-center gap-1.5 text-sm font-medium text-slate-500 transition-colors hover:text-slate-700"
+        className="mb-3 inline-flex items-center gap-1.5 text-sm font-medium text-warm-gray transition-colors hover:text-charcoal"
       >
         <FiArrowLeft className="h-4 w-4" />
         All Projects
@@ -39,8 +39,8 @@ export default async function ProjectLayout({
 
       {/* Project header */}
       <div className="mb-4 flex flex-wrap items-center gap-3">
-        <h1 className="text-2xl font-bold text-slate-900">{project.name}</h1>
-        <span className="rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-medium capitalize text-slate-600">
+        <h1 className="text-2xl font-bold text-charcoal">{project.name}</h1>
+        <span className="rounded-full bg-cream px-2.5 py-0.5 text-xs font-medium capitalize text-warm-gray">
           {statusLabel}
         </span>
       </div>

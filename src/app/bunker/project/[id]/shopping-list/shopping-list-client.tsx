@@ -171,13 +171,13 @@ export function ShoppingListClient({
     <div className="pb-8">
       {/* Header */}
       <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
-        <h2 className="text-lg font-semibold text-slate-900">Shopping List</h2>
+        <h2 className="text-lg font-semibold text-charcoal">Shopping List</h2>
         <div className="flex gap-2">
           {items.length === 0 && (
             <button
               onClick={handleGenerate}
               disabled={generating}
-              className="inline-flex items-center gap-2 rounded-lg border border-teal-200 bg-teal-50 px-3 py-2 text-sm font-medium text-teal-700 transition-colors hover:bg-teal-100 disabled:opacity-50"
+              className="inline-flex items-center gap-2 rounded-lg border border-sage/30 bg-sage/10 px-3 py-2 text-sm font-medium text-sage-dark transition-colors hover:bg-sage/20 disabled:opacity-50"
             >
               {generating ? (
                 <FiLoader className="h-4 w-4 animate-spin" />
@@ -189,7 +189,7 @@ export function ShoppingListClient({
           )}
           <button
             onClick={() => setShowAddForm(true)}
-            className="inline-flex items-center gap-2 rounded-lg bg-teal-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-teal-700"
+            className="inline-flex items-center gap-2 rounded-lg bg-sage px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-sage-dark"
           >
             <FiPlus className="h-4 w-4" />
             Add Item
@@ -202,7 +202,7 @@ export function ShoppingListClient({
         <div className="space-y-6">
           {grouped.map(([stageId, stageItems]) => (
             <div key={stageId ?? "ungrouped"}>
-              <h3 className="mb-2 text-sm font-semibold uppercase tracking-wide text-slate-500">
+              <h3 className="mb-2 text-sm font-semibold uppercase tracking-wide text-warm-gray">
                 {stageId ? stageNameMap.get(stageId) || "Stage" : "General"}
               </h3>
               <div className="space-y-2">
@@ -218,8 +218,8 @@ export function ShoppingListClient({
                       onClick={() => togglePurchased(item)}
                       className={`flex h-5 w-5 shrink-0 items-center justify-center rounded border-2 transition-colors ${
                         item.is_purchased
-                          ? "border-teal-500 bg-teal-500 text-white"
-                          : "border-slate-300 hover:border-teal-400"
+                          ? "border-teal-500 bg-sage/100 text-white"
+                          : "border-border-warm hover:border-teal-400"
                       }`}
                     >
                       {item.is_purchased && (
@@ -244,14 +244,14 @@ export function ShoppingListClient({
                       <p
                         className={`text-sm font-medium ${
                           item.is_purchased
-                            ? "text-slate-400 line-through"
-                            : "text-slate-800"
+                            ? "text-warm-gray line-through"
+                            : "text-charcoal"
                         }`}
                       >
                         {item.name}
                       </p>
                       {(item.quantity || item.unit) && (
-                        <p className="text-xs text-slate-400">
+                        <p className="text-xs text-warm-gray">
                           {item.quantity || ""} {item.unit || ""}
                         </p>
                       )}
@@ -260,7 +260,7 @@ export function ShoppingListClient({
                     {/* Prices */}
                     <div className="flex items-center gap-2 shrink-0">
                       {item.estimated_price != null && (
-                        <span className="text-xs text-slate-400">
+                        <span className="text-xs text-warm-gray">
                           est. ${Number(item.estimated_price).toFixed(2)}
                         </span>
                       )}
@@ -277,7 +277,7 @@ export function ShoppingListClient({
                         onBlur={(e) =>
                           updateActualPrice(item.id, e.target.value)
                         }
-                        className="w-20 rounded-md border border-slate-200 px-2 py-1 text-right text-xs focus:border-teal-500 focus:ring-1 focus:ring-teal-500 focus:outline-none"
+                        className="w-20 rounded-md border border-border-warm px-2 py-1 text-right text-xs focus:border-teal-500 focus:ring-1 focus:ring-teal-500 focus:outline-none"
                       />
                     </div>
                   </div>
@@ -287,10 +287,10 @@ export function ShoppingListClient({
           ))}
 
           {/* Totals */}
-          <div className="rounded-xl bg-slate-900 p-4">
+          <div className="rounded-xl bg-charcoal p-4">
             <div className="grid grid-cols-3 gap-4 text-center">
               <div>
-                <p className="text-[10px] font-semibold uppercase text-slate-400">
+                <p className="text-[10px] font-semibold uppercase text-warm-gray">
                   Estimated
                 </p>
                 <p className="mt-1 text-lg font-bold text-white">
@@ -298,7 +298,7 @@ export function ShoppingListClient({
                 </p>
               </div>
               <div>
-                <p className="text-[10px] font-semibold uppercase text-slate-400">
+                <p className="text-[10px] font-semibold uppercase text-warm-gray">
                   Actual
                 </p>
                 <p className="mt-1 text-lg font-bold text-white">
@@ -306,12 +306,12 @@ export function ShoppingListClient({
                 </p>
               </div>
               <div>
-                <p className="text-[10px] font-semibold uppercase text-slate-400">
+                <p className="text-[10px] font-semibold uppercase text-warm-gray">
                   Difference
                 </p>
                 <p
                   className={`mt-1 text-lg font-bold ${
-                    difference >= 0 ? "text-teal-400" : "text-red-400"
+                    difference >= 0 ? "text-sage" : "text-red-400"
                   }`}
                 >
                   {difference >= 0 ? "+" : ""}${difference.toFixed(2)}
@@ -321,19 +321,19 @@ export function ShoppingListClient({
           </div>
         </div>
       ) : (
-        <div className="flex flex-col items-center justify-center rounded-xl border-2 border-dashed border-slate-200 bg-white py-16">
+        <div className="flex flex-col items-center justify-center rounded-xl border-2 border-dashed border-border-warm bg-white py-16">
           <FiShoppingBag className="mb-3 h-10 w-10 text-slate-300" />
-          <h3 className="text-lg font-semibold text-slate-700">
+          <h3 className="text-lg font-semibold text-charcoal">
             No items yet
           </h3>
-          <p className="mt-1 text-center text-sm text-slate-500">
+          <p className="mt-1 text-center text-sm text-warm-gray">
             Auto-generate from your plan or add items manually
           </p>
           <div className="mt-6 flex gap-3">
             <button
               onClick={handleGenerate}
               disabled={generating}
-              className="inline-flex items-center gap-2 rounded-lg border border-teal-200 bg-teal-50 px-4 py-2.5 text-sm font-medium text-teal-700 hover:bg-teal-100 disabled:opacity-50"
+              className="inline-flex items-center gap-2 rounded-lg border border-sage/30 bg-sage/10 px-4 py-2.5 text-sm font-medium text-sage-dark hover:bg-sage/20 disabled:opacity-50"
             >
               {generating ? (
                 <FiLoader className="h-4 w-4 animate-spin" />
@@ -344,7 +344,7 @@ export function ShoppingListClient({
             </button>
             <button
               onClick={() => setShowAddForm(true)}
-              className="inline-flex items-center gap-2 rounded-lg bg-teal-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-teal-700"
+              className="inline-flex items-center gap-2 rounded-lg bg-sage px-4 py-2.5 text-sm font-medium text-white hover:bg-sage-dark"
             >
               <FiPlus className="h-4 w-4" />
               Add Item
@@ -357,7 +357,7 @@ export function ShoppingListClient({
       {showAddForm && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
           <div className="w-full max-w-sm rounded-2xl bg-white p-5 shadow-xl">
-            <h3 className="mb-4 text-lg font-semibold text-slate-900">
+            <h3 className="mb-4 text-lg font-semibold text-charcoal">
               Add Item
             </h3>
             <form onSubmit={handleAddItem} className="space-y-3">
@@ -367,7 +367,7 @@ export function ShoppingListClient({
                 value={newName}
                 onChange={(e) => setNewName(e.target.value)}
                 placeholder="Item name"
-                className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-teal-500 focus:ring-1 focus:ring-teal-500 focus:outline-none"
+                className="w-full rounded-lg border border-border-warm px-3 py-2 text-sm focus:border-teal-500 focus:ring-1 focus:ring-teal-500 focus:outline-none"
               />
               <div className="flex gap-2">
                 <input
@@ -376,14 +376,14 @@ export function ShoppingListClient({
                   value={newQty}
                   onChange={(e) => setNewQty(e.target.value)}
                   placeholder="Qty"
-                  className="w-20 rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-teal-500 focus:ring-1 focus:ring-teal-500 focus:outline-none"
+                  className="w-20 rounded-lg border border-border-warm px-3 py-2 text-sm focus:border-teal-500 focus:ring-1 focus:ring-teal-500 focus:outline-none"
                 />
                 <input
                   type="text"
                   value={newUnit}
                   onChange={(e) => setNewUnit(e.target.value)}
                   placeholder="Unit (ea, ft, gal...)"
-                  className="flex-1 rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-teal-500 focus:ring-1 focus:ring-teal-500 focus:outline-none"
+                  className="flex-1 rounded-lg border border-border-warm px-3 py-2 text-sm focus:border-teal-500 focus:ring-1 focus:ring-teal-500 focus:outline-none"
                 />
               </div>
               <input
@@ -392,12 +392,12 @@ export function ShoppingListClient({
                 value={newEstPrice}
                 onChange={(e) => setNewEstPrice(e.target.value)}
                 placeholder="Estimated price"
-                className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-teal-500 focus:ring-1 focus:ring-teal-500 focus:outline-none"
+                className="w-full rounded-lg border border-border-warm px-3 py-2 text-sm focus:border-teal-500 focus:ring-1 focus:ring-teal-500 focus:outline-none"
               />
               <select
                 value={newStageId}
                 onChange={(e) => setNewStageId(e.target.value)}
-                className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-teal-500 focus:ring-1 focus:ring-teal-500 focus:outline-none"
+                className="w-full rounded-lg border border-border-warm px-3 py-2 text-sm focus:border-teal-500 focus:ring-1 focus:ring-teal-500 focus:outline-none"
               >
                 <option value="">No stage (general)</option>
                 {stages.map((s) => (
@@ -410,13 +410,13 @@ export function ShoppingListClient({
                 <button
                   type="button"
                   onClick={() => setShowAddForm(false)}
-                  className="flex-1 rounded-lg border border-slate-200 px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-50"
+                  className="flex-1 rounded-lg border border-border-warm px-4 py-2 text-sm font-medium text-warm-gray hover:bg-cream"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="flex-1 rounded-lg bg-teal-600 px-4 py-2 text-sm font-medium text-white hover:bg-teal-700"
+                  className="flex-1 rounded-lg bg-sage px-4 py-2 text-sm font-medium text-white hover:bg-sage-dark"
                 >
                   Add
                 </button>

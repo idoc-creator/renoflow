@@ -110,10 +110,10 @@ export function AddProductModal({
       <div className="relative w-full max-w-md rounded-2xl bg-white shadow-xl">
         {/* Header */}
         <div className="flex items-center justify-between border-b border-slate-100 px-5 py-4">
-          <h2 className="text-lg font-semibold text-slate-900">Add Product</h2>
+          <h2 className="text-lg font-semibold text-charcoal">Add Product</h2>
           <button
             onClick={onClose}
-            className="text-slate-400 hover:text-slate-600"
+            className="text-warm-gray hover:text-warm-gray"
           >
             <FiX className="h-5 w-5" />
           </button>
@@ -125,8 +125,8 @@ export function AddProductModal({
             onClick={() => setTab("url")}
             className={`flex-1 px-4 py-3 text-sm font-medium transition-colors ${
               tab === "url"
-                ? "border-b-2 border-teal-600 text-teal-700"
-                : "text-slate-500 hover:text-slate-700"
+                ? "border-b-2 border-teal-600 text-sage-dark"
+                : "text-warm-gray hover:text-charcoal"
             }`}
           >
             <FiLink className="mr-1.5 inline h-4 w-4" />
@@ -136,8 +136,8 @@ export function AddProductModal({
             onClick={() => setTab("upload")}
             className={`flex-1 px-4 py-3 text-sm font-medium transition-colors ${
               tab === "upload"
-                ? "border-b-2 border-teal-600 text-teal-700"
-                : "text-slate-500 hover:text-slate-700"
+                ? "border-b-2 border-teal-600 text-sage-dark"
+                : "text-warm-gray hover:text-charcoal"
             }`}
           >
             <FiUpload className="mr-1.5 inline h-4 w-4" />
@@ -150,7 +150,7 @@ export function AddProductModal({
           {tab === "url" ? (
             <>
               <div>
-                <label className="mb-1 block text-sm font-medium text-slate-700">
+                <label className="mb-1 block text-sm font-medium text-charcoal">
                   Product URL
                 </label>
                 <input
@@ -158,11 +158,11 @@ export function AddProductModal({
                   value={retailerUrl}
                   onChange={(e) => setRetailerUrl(e.target.value)}
                   placeholder="https://..."
-                  className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-teal-500 focus:ring-1 focus:ring-teal-500 focus:outline-none"
+                  className="w-full rounded-lg border border-border-warm px-3 py-2 text-sm focus:border-teal-500 focus:ring-1 focus:ring-teal-500 focus:outline-none"
                 />
               </div>
               <div>
-                <label className="mb-1 block text-sm font-medium text-slate-700">
+                <label className="mb-1 block text-sm font-medium text-charcoal">
                   Retailer Name
                 </label>
                 <input
@@ -170,7 +170,7 @@ export function AddProductModal({
                   value={retailerName}
                   onChange={(e) => setRetailerName(e.target.value)}
                   placeholder="e.g. Home Depot"
-                  className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-teal-500 focus:ring-1 focus:ring-teal-500 focus:outline-none"
+                  className="w-full rounded-lg border border-border-warm px-3 py-2 text-sm focus:border-teal-500 focus:ring-1 focus:ring-teal-500 focus:outline-none"
                 />
               </div>
             </>
@@ -185,8 +185,8 @@ export function AddProductModal({
               onClick={() => fileInputRef.current?.click()}
               className={`flex cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed p-8 transition-colors ${
                 dragging
-                  ? "border-teal-400 bg-teal-50"
-                  : "border-slate-200 hover:border-slate-300"
+                  ? "border-teal-400 bg-sage/10"
+                  : "border-border-warm hover:border-border-warm"
               }`}
             >
               {preview ? (
@@ -197,11 +197,11 @@ export function AddProductModal({
                 />
               ) : (
                 <>
-                  <FiUpload className="mb-2 h-8 w-8 text-slate-400" />
-                  <p className="text-sm text-slate-500">
+                  <FiUpload className="mb-2 h-8 w-8 text-warm-gray" />
+                  <p className="text-sm text-warm-gray">
                     Drag a photo or click to browse
                   </p>
-                  <p className="mt-1 text-xs text-slate-400">
+                  <p className="mt-1 text-xs text-warm-gray">
                     JPEG, PNG, WebP, GIF up to 5MB
                   </p>
                 </>
@@ -218,7 +218,7 @@ export function AddProductModal({
 
           {/* Shared fields */}
           <div>
-            <label className="mb-1 block text-sm font-medium text-slate-700">
+            <label className="mb-1 block text-sm font-medium text-charcoal">
               Product Name
             </label>
             <input
@@ -226,16 +226,16 @@ export function AddProductModal({
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="e.g. Brass cabinet pulls"
-              className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-teal-500 focus:ring-1 focus:ring-teal-500 focus:outline-none"
+              className="w-full rounded-lg border border-border-warm px-3 py-2 text-sm focus:border-teal-500 focus:ring-1 focus:ring-teal-500 focus:outline-none"
             />
           </div>
 
           <div>
-            <label className="mb-1 block text-sm font-medium text-slate-700">
+            <label className="mb-1 block text-sm font-medium text-charcoal">
               Price
             </label>
             <div className="relative">
-              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-slate-400">
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-warm-gray">
                 $
               </span>
               <input
@@ -245,13 +245,13 @@ export function AddProductModal({
                 value={price}
                 onChange={(e) => setPrice(e.target.value)}
                 placeholder="0.00"
-                className="w-full rounded-lg border border-slate-200 py-2 pl-7 pr-3 text-sm focus:border-teal-500 focus:ring-1 focus:ring-teal-500 focus:outline-none"
+                className="w-full rounded-lg border border-border-warm py-2 pl-7 pr-3 text-sm focus:border-teal-500 focus:ring-1 focus:ring-teal-500 focus:outline-none"
               />
             </div>
           </div>
 
           <div>
-            <label className="mb-1 block text-sm font-medium text-slate-700">
+            <label className="mb-1 block text-sm font-medium text-charcoal">
               Notes
             </label>
             <textarea
@@ -259,14 +259,14 @@ export function AddProductModal({
               onChange={(e) => setNotes(e.target.value)}
               rows={2}
               placeholder="Color options, dimensions, etc."
-              className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-teal-500 focus:ring-1 focus:ring-teal-500 focus:outline-none"
+              className="w-full rounded-lg border border-border-warm px-3 py-2 text-sm focus:border-teal-500 focus:ring-1 focus:ring-teal-500 focus:outline-none"
             />
           </div>
 
           <button
             type="submit"
             disabled={saving}
-            className="flex w-full items-center justify-center gap-2 rounded-lg bg-teal-600 px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-teal-700 disabled:opacity-50"
+            className="flex w-full items-center justify-center gap-2 rounded-lg bg-sage px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-sage-dark disabled:opacity-50"
           >
             {saving ? (
               <>

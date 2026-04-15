@@ -48,10 +48,10 @@ export function MoodBoardClient({
     <div>
       {/* Header */}
       <div className="mb-6 flex items-center justify-between">
-        <h2 className="text-lg font-semibold text-slate-900">Mood Board</h2>
+        <h2 className="text-lg font-semibold text-charcoal">Mood Board</h2>
         <button
           onClick={handleAddClick}
-          className="inline-flex items-center gap-2 rounded-lg bg-teal-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-teal-700"
+          className="inline-flex items-center gap-2 rounded-lg bg-sage px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-sage-dark"
         >
           <FiPlus className="h-4 w-4" />
           Add Product
@@ -67,7 +67,7 @@ export function MoodBoardClient({
               className="group overflow-hidden rounded-xl bg-white shadow-sm transition-shadow hover:shadow-md"
             >
               {/* Image */}
-              <div className="aspect-square bg-slate-100">
+              <div className="aspect-square bg-cream">
                 {item.image_url ? (
                   <img
                     src={item.image_url}
@@ -83,17 +83,17 @@ export function MoodBoardClient({
 
               {/* Info */}
               <div className="p-3">
-                <p className="font-medium text-sm text-slate-800 line-clamp-1">
+                <p className="font-medium text-sm text-charcoal line-clamp-1">
                   {item.name || "Untitled"}
                 </p>
                 {item.price != null && (
-                  <p className="mt-0.5 text-sm font-semibold text-teal-700">
+                  <p className="mt-0.5 text-sm font-semibold text-sage-dark">
                     ${Number(item.price).toFixed(2)}
                   </p>
                 )}
                 {item.retailer_name && (
                   <div className="mt-1 flex items-center gap-1">
-                    <span className="text-xs text-slate-400">
+                    <span className="text-xs text-warm-gray">
                       {item.retailer_name}
                     </span>
                     {item.retailer_url && (
@@ -101,7 +101,7 @@ export function MoodBoardClient({
                         href={item.retailer_url}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-slate-400 hover:text-teal-600"
+                        className="text-warm-gray hover:text-sage"
                       >
                         <FiExternalLink className="h-3 w-3" />
                       </a>
@@ -109,7 +109,7 @@ export function MoodBoardClient({
                   </div>
                 )}
                 {item.notes && (
-                  <p className="mt-1 text-xs text-slate-400 line-clamp-2">
+                  <p className="mt-1 text-xs text-warm-gray line-clamp-2">
                     {item.notes}
                   </p>
                 )}
@@ -118,17 +118,17 @@ export function MoodBoardClient({
           ))}
         </div>
       ) : (
-        <div className="flex flex-col items-center justify-center rounded-xl border-2 border-dashed border-slate-200 bg-white py-16">
+        <div className="flex flex-col items-center justify-center rounded-xl border-2 border-dashed border-border-warm bg-white py-16">
           <FiImage className="mb-3 h-10 w-10 text-slate-300" />
-          <h3 className="text-lg font-semibold text-slate-700">
+          <h3 className="text-lg font-semibold text-charcoal">
             No products yet
           </h3>
-          <p className="mt-1 text-sm text-slate-500">
+          <p className="mt-1 text-sm text-warm-gray">
             Add products to visualize your renovation
           </p>
           <button
             onClick={() => setShowModal(true)}
-            className="mt-6 inline-flex items-center gap-2 rounded-lg bg-teal-600 px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-teal-700"
+            className="mt-6 inline-flex items-center gap-2 rounded-lg bg-sage px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-sage-dark"
           >
             <FiPlus className="h-4 w-4" />
             Add Product

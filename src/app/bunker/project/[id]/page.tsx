@@ -50,7 +50,7 @@ export default async function ProjectPlanPage({
       {/* Summary */}
       {project.summary && (
         <div className="mb-6 rounded-xl bg-white p-5 shadow-sm">
-          <p className="text-slate-700 leading-relaxed">{project.summary}</p>
+          <p className="text-charcoal leading-relaxed">{project.summary}</p>
         </div>
       )}
 

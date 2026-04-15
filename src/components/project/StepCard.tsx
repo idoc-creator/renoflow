@@ -6,7 +6,7 @@ import { FiClock } from "react-icons/fi";
 
 const skillColors: Record<string, string> = {
   beginner: "bg-green-50 text-green-700",
-  intermediate: "bg-amber-50 text-amber-700",
+  intermediate: "bg-terracotta/10 text-terracotta-dark",
   advanced: "bg-red-50 text-red-700",
   hire_out: "bg-purple-50 text-purple-700",
 };
@@ -60,9 +60,9 @@ export function StepCard({ step, index, isNext, onToggle }: StepCardProps) {
     <div
       className={`flex gap-3 rounded-lg border p-3 transition-colors ${
         isNext && !completed
-          ? "border-teal-300 bg-teal-50/50"
+          ? "border-teal-300 bg-sage/10/50"
           : completed
-            ? "border-slate-100 bg-slate-50"
+            ? "border-slate-100 bg-cream"
             : "border-slate-100"
       }`}
     >
@@ -71,8 +71,8 @@ export function StepCard({ step, index, isNext, onToggle }: StepCardProps) {
         disabled={loading}
         className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 transition-colors ${
           completed
-            ? "border-teal-500 bg-teal-500 text-white"
-            : "border-slate-300 hover:border-teal-400"
+            ? "border-teal-500 bg-sage/100 text-white"
+            : "border-border-warm hover:border-teal-400"
         }`}
         aria-label={completed ? "Mark incomplete" : "Mark complete"}
       >
@@ -85,25 +85,25 @@ export function StepCard({ step, index, isNext, onToggle }: StepCardProps) {
 
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2">
-          <span className="text-[10px] font-bold text-slate-400">
+          <span className="text-[10px] font-bold text-warm-gray">
             {index + 1}
           </span>
           <p
             className={`font-medium text-sm ${
-              completed ? "text-slate-400 line-through" : "text-slate-800"
+              completed ? "text-warm-gray line-through" : "text-charcoal"
             }`}
           >
             {step.title}
           </p>
           {isNext && !completed && (
-            <span className="rounded-full bg-teal-600 px-2 py-0.5 text-[9px] font-bold uppercase text-white">
+            <span className="rounded-full bg-sage px-2 py-0.5 text-[9px] font-bold uppercase text-white">
               Next
             </span>
           )}
         </div>
         <p
           className={`mt-0.5 text-xs ${
-            completed ? "text-slate-300" : "text-slate-500"
+            completed ? "text-slate-300" : "text-warm-gray"
           }`}
         >
           {step.description}
@@ -111,17 +111,17 @@ export function StepCard({ step, index, isNext, onToggle }: StepCardProps) {
         <div className="mt-2 flex flex-wrap gap-2">
           <span
             className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium ${
-              skillColors[step.skill_level] || "bg-slate-50 text-slate-700"
+              skillColors[step.skill_level] || "bg-cream text-charcoal"
             }`}
           >
             {step.skill_level?.replace("_", " ")}
           </span>
-          <span className="inline-flex items-center gap-0.5 text-[10px] text-slate-400">
+          <span className="inline-flex items-center gap-0.5 text-[10px] text-warm-gray">
             <FiClock className="h-2.5 w-2.5" />~{step.estimated_minutes} min
           </span>
         </div>
         {step.tools_needed?.length > 0 && (
-          <p className="mt-1 text-[10px] text-slate-400">
+          <p className="mt-1 text-[10px] text-warm-gray">
             Tools: {step.tools_needed.join(", ")}
           </p>
         )}

@@ -23,59 +23,59 @@ export function SavingsDashboard({
 
   return (
     <div className="space-y-4">
-      <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500">
+      <h2 className="text-sm font-semibold uppercase tracking-wide text-warm-gray">
         Savings Dashboard
       </h2>
 
       <div className="grid grid-cols-2 gap-3">
         {/* Saved by DIYing */}
-        <div className="rounded-xl bg-teal-50 border border-teal-200 p-4">
-          <p className="text-[10px] font-semibold uppercase tracking-wide text-teal-600">
+        <div className="rounded-xl bg-sage/10 border border-sage/30 p-4">
+          <p className="text-[10px] font-semibold uppercase tracking-wide text-sage">
             Saved by DIYing
           </p>
-          <p className="mt-1 text-2xl font-bold text-teal-700">
+          <p className="mt-1 text-2xl font-bold text-sage-dark">
             ${savedByDiy.toLocaleString()}
           </p>
         </div>
 
         {/* Spent so far */}
-        <div className="rounded-xl bg-white border border-slate-200 p-4">
-          <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">
+        <div className="rounded-xl bg-white border border-border-warm p-4">
+          <p className="text-[10px] font-semibold uppercase tracking-wide text-warm-gray">
             Spent so far
           </p>
-          <p className="mt-1 text-2xl font-bold text-slate-700">
+          <p className="mt-1 text-2xl font-bold text-charcoal">
             ${spent.toLocaleString()}
           </p>
         </div>
 
         {/* Budget remaining */}
-        <div className="rounded-xl bg-white border border-slate-200 p-4">
-          <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">
+        <div className="rounded-xl bg-white border border-border-warm p-4">
+          <p className="text-[10px] font-semibold uppercase tracking-wide text-warm-gray">
             Budget remaining
           </p>
-          <p className="mt-1 text-2xl font-bold text-slate-700">
+          <p className="mt-1 text-2xl font-bold text-charcoal">
             ${budgetRemaining.toLocaleString()}
           </p>
         </div>
 
         {/* Earned from shares */}
-        <div className="rounded-xl bg-amber-50 border border-amber-200 p-4">
-          <p className="text-[10px] font-semibold uppercase tracking-wide text-amber-600">
+        <div className="rounded-xl bg-terracotta/10 border border-terracotta/30 p-4">
+          <p className="text-[10px] font-semibold uppercase tracking-wide text-terracotta">
             Earned from shares
           </p>
-          <p className="mt-1 text-2xl font-bold text-amber-700">
+          <p className="mt-1 text-2xl font-bold text-terracotta-dark">
             ${earned.toLocaleString()}
           </p>
         </div>
       </div>
 
       {/* Net advantage */}
-      <div className="rounded-xl bg-slate-900 p-4 text-center">
-        <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-400">
+      <div className="rounded-xl bg-charcoal p-4 text-center">
+        <p className="text-[10px] font-semibold uppercase tracking-wide text-warm-gray">
           Net Advantage
         </p>
         <p
-          className={`mt-1 text-3xl font-black ${netAdvantage >= 0 ? "text-teal-400" : "text-red-400"}`}
+          className={`mt-1 text-3xl font-black ${netAdvantage >= 0 ? "text-sage" : "text-red-400"}`}
         >
           {netAdvantage >= 0 ? "+" : ""}${netAdvantage.toLocaleString()}
         </p>

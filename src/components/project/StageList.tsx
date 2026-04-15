@@ -5,10 +5,10 @@ import { FiChevronDown, FiChevronRight, FiDollarSign, FiClock } from "react-icon
 import { StepCard, type StepData } from "./StepCard";
 
 const statusColors: Record<string, string> = {
-  pending: "bg-slate-100 text-slate-600",
-  in_progress: "bg-teal-100 text-teal-700",
+  pending: "bg-cream text-warm-gray",
+  in_progress: "bg-sage/20 text-sage-dark",
   completed: "bg-green-100 text-green-700",
-  skipped: "bg-slate-100 text-slate-400",
+  skipped: "bg-cream text-warm-gray",
 };
 
 export interface StageData {
@@ -94,7 +94,7 @@ export function StageList({ stages: initialStages }: StageListProps) {
 
   return (
     <div className="space-y-4">
-      <h2 className="text-lg font-semibold text-slate-900">
+      <h2 className="text-lg font-semibold text-charcoal">
         Your Plan ({stages.length} stages)
       </h2>
 
@@ -113,12 +113,12 @@ export function StageList({ stages: initialStages }: StageListProps) {
               onClick={() => toggleStage(stage.id)}
               className="flex w-full items-start gap-3 p-5 text-left"
             >
-              <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-teal-100 text-xs font-bold text-teal-700">
+              <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-sage/20 text-xs font-bold text-sage-dark">
                 {idx + 1}
               </span>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 flex-wrap">
-                  <h3 className="font-semibold text-slate-900">
+                  <h3 className="font-semibold text-charcoal">
                     {stage.title}
                   </h3>
                   <span
@@ -129,12 +129,12 @@ export function StageList({ stages: initialStages }: StageListProps) {
                     {stage.status?.replace("_", " ")}
                   </span>
                 </div>
-                <p className="mt-1 text-sm text-slate-600 line-clamp-2">
+                <p className="mt-1 text-sm text-warm-gray line-clamp-2">
                   {stage.description}
                 </p>
 
                 {/* Meta + progress */}
-                <div className="mt-3 flex flex-wrap items-center gap-4 text-xs text-slate-400">
+                <div className="mt-3 flex flex-wrap items-center gap-4 text-xs text-warm-gray">
                   <span className="flex items-center gap-1">
                     <FiDollarSign className="h-3 w-3" />$
                     {(stage.estimated_cost || 0).toLocaleString()}
@@ -150,15 +150,15 @@ export function StageList({ stages: initialStages }: StageListProps) {
 
                 {/* Progress bar */}
                 {totalSteps > 0 && (
-                  <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-slate-100">
+                  <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-cream">
                     <div
-                      className="h-full rounded-full bg-teal-500 transition-all duration-300"
+                      className="h-full rounded-full bg-sage/100 transition-all duration-300"
                       style={{ width: `${progressPct}%` }}
                     />
                   </div>
                 )}
               </div>
-              <span className="mt-1 text-slate-400">
+              <span className="mt-1 text-warm-gray">
                 {isExpanded ? (
                   <FiChevronDown className="h-5 w-5" />
                 ) : (
@@ -175,7 +175,7 @@ export function StageList({ stages: initialStages }: StageListProps) {
                   <div className="mb-4">
                     <button
                       onClick={() => toggleReason(stage.id)}
-                      className="flex items-center gap-1 text-xs font-medium text-slate-500 hover:text-slate-700"
+                      className="flex items-center gap-1 text-xs font-medium text-warm-gray hover:text-charcoal"
                     >
                       {reasonExpanded ? (
                         <FiChevronDown className="h-3 w-3" />
@@ -185,8 +185,8 @@ export function StageList({ stages: initialStages }: StageListProps) {
                       Why this order
                     </button>
                     {reasonExpanded && (
-                      <div className="mt-2 rounded-lg bg-slate-50 p-3">
-                        <p className="text-sm text-slate-700">{stage.reason}</p>
+                      <div className="mt-2 rounded-lg bg-cream p-3">
+                        <p className="text-sm text-charcoal">{stage.reason}</p>
                       </div>
                     )}
                   </div>

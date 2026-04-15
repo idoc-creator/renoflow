@@ -26,7 +26,7 @@ export function ProjectNav({ projectId }: ProjectNavProps) {
   }
 
   return (
-    <nav className="flex gap-1 rounded-lg bg-slate-100 p-1">
+    <nav className="flex gap-1 rounded-lg bg-cream p-1">
       {tabs.map((tab) => {
         const active = isActive(tab);
         return (
@@ -35,8 +35,8 @@ export function ProjectNav({ projectId }: ProjectNavProps) {
             href={`${base}${tab.href}`}
             className={`flex items-center gap-1.5 rounded-md px-3 py-2 text-sm font-medium transition-colors ${
               active
-                ? "bg-white text-teal-700 shadow-sm"
-                : "text-slate-500 hover:text-slate-700"
+                ? "bg-white text-sage-dark shadow-sm"
+                : "text-warm-gray hover:text-charcoal"
             }`}
           >
             <tab.icon className="h-4 w-4" />
