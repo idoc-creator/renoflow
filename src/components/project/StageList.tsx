@@ -1,8 +1,11 @@
 "use client";
 
 import { useState, useCallback } from "react";
+import { useRouter } from "next/navigation";
 import { FiChevronDown, FiChevronRight, FiDollarSign, FiClock } from "react-icons/fi";
 import { StepCard, type StepData } from "./StepCard";
+import { createClient } from "@/lib/supabase/client";
+import EmptyPlanState from "./EmptyPlanState";
 
 const statusColors: Record<string, string> = {
   pending: "bg-cream text-warm-gray",
@@ -26,10 +29,40 @@ export interface StageData {
 
 interface StageListProps {
   stages: StageData[];
+  projectId: string;
 }
 
-export function StageList({ stages: initialStages }: StageListProps) {
+export function StageList({ stages: initialStages, projectId }: StageListProps) {
+  const router = useRouter();
   const [stages, setStages] = useState(initialStages);
+
+  async function handleStartBlank() {
+    const supabase = createClient();
+    const { error } = await supabase.from("stages").insert({
+      project_id: projectId,
+      title: "Stage 1",
+      description: "",
+      reason: "",
+      estimated_cost: 0,
+      estimated_hours: 0,
+      sort_order: 0,
+      status: "pending",
+    });
+    if (!error) {
+      router.refresh();
+    }
+  }
+
+  // Empty state
+  if (stages.length === 0) {
+    return (
+      <EmptyPlanState
+        projectId={projectId}
+        onStartBlank={handleStartBlank}
+      />
+    );
+  }
+
   const [expandedStages, setExpandedStages] = useState<Set<string>>(() => {
     // Auto-expand stages that have incomplete steps
     const expanded = new Set<string>();

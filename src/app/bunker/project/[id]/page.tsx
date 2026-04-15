@@ -58,7 +58,7 @@ export default async function ProjectPlanPage({
       <div className="flex flex-col-reverse gap-6 lg:flex-row">
         {/* Left column — stages */}
         <div className="flex-1 min-w-0 lg:basis-2/3">
-          <StageList stages={sortedStages} />
+          <StageList stages={sortedStages} projectId={id} />
         </div>
 
         {/* Right column — savings dashboard (sticky on desktop) */}
