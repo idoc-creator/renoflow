@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { FiArrowLeft } from "react-icons/fi";
 import { ProjectNav } from "@/components/project/ProjectNav";
+import AskBenchDrawer from "@/components/project/AskBenchDrawer";
 
 export default async function ProjectLayout({
   children,
@@ -16,7 +17,7 @@ export default async function ProjectLayout({
 
   const { data: project, error } = await supabase
     .from("projects")
-    .select("id, name, status")
+    .select("id, name, status, category")
     .eq("id", id)
     .single();
 
@@ -51,6 +52,7 @@ export default async function ProjectLayout({
       </div>
 
       {children}
+      <AskBenchDrawer projectId={id} projectCategory={project.category ?? undefined} />
     </div>
   );
 }
