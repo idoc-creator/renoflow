@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   FiHome,
+  FiTool,
   FiShoppingCart,
   FiDollarSign,
   FiLogOut,
@@ -14,6 +15,7 @@ import { useState } from "react";
 
 const navItems = [
   { href: "/bunker", label: "Projects", icon: FiHome },
+  { href: "/bunker/toolbox", label: "My Toolbox", icon: FiTool },
   { href: "/bunker/shopping-list", label: "Shopping List", icon: FiShoppingCart },
   { href: "/bunker/earnings", label: "Earnings", icon: FiDollarSign },
 ];
