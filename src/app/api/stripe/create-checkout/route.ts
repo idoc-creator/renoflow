@@ -53,7 +53,7 @@ export async function POST(request: Request) {
         price_data: {
           currency: "usd",
           product_data: {
-            name: `RenoFlow ${plan.name}`,
+            name: `Bench ${plan.name}`,
             description: plan.features.join(", "),
           },
           unit_amount: plan.price,

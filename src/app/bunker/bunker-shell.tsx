@@ -33,7 +33,7 @@ export function BunkerShell({
       {/* Sidebar — desktop */}
       <aside className="hidden w-64 flex-col border-r border-border-warm bg-white md:flex">
         <div className="flex h-16 items-center border-b border-slate-100 px-6">
-          <span className="text-lg font-bold text-sage-dark">RenoFlow</span>
+          <span className="text-lg font-bold text-sage-dark">Bench</span>
         </div>
         <nav className="flex-1 space-y-1 px-3 py-4">
           {navItems.map((item) => {
@@ -71,7 +71,7 @@ export function BunkerShell({
         }`}
       >
         <div className="flex h-16 items-center justify-between border-b border-slate-100 px-6">
-          <span className="text-lg font-bold text-sage-dark">RenoFlow</span>
+          <span className="text-lg font-bold text-sage-dark">Bench</span>
           <button
             onClick={() => setSidebarOpen(false)}
             className="text-warm-gray hover:text-warm-gray"
