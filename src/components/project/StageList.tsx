@@ -18,6 +18,8 @@ import EmptyPlanState from "./EmptyPlanState";
 import AddStageButton from "./AddStageButton";
 import StageEditForm, { type StageFormData } from "./StageEditForm";
 import ConfirmDelete from "./ConfirmDelete";
+import AddStepButton from "./AddStepButton";
+import type { StepFormData } from "./StepEditForm";
 
 const statusColors: Record<string, string> = {
   pending: "bg-cream text-warm-gray",
@@ -203,6 +205,130 @@ export function StageList({
     }
     setStages((prev) => prev.filter((s) => s.id !== stageId));
     setDeletingStageId(null);
+  }
+
+  async function handleCreateStep(stageId: string, data: StepFormData) {
+    const stage = stages.find((s) => s.id === stageId);
+    if (!stage) return;
+    const maxSort = stage.steps.reduce(
+      (m, s) => Math.max(m, s.sort_order),
+      -1
+    );
+
+    const { data: inserted, error } = await supabase
+      .from("steps")
+      .insert({
+        stage_id: stageId,
+        title: data.title,
+        description: data.description,
+        skill_level: data.skill_level,
+        estimated_minutes: data.estimated_minutes,
+        tools_needed: data.tools_needed,
+        materials_needed: [],
+        sort_order: maxSort + 1,
+        is_completed: false,
+      })
+      .select("*")
+      .single();
+
+    if (error || !inserted) {
+      alert("Failed to create step.");
+      return;
+    }
+
+    setStages((prev) =>
+      prev.map((s) =>
+        s.id === stageId
+          ? { ...s, steps: [...s.steps, inserted as StepData] }
+          : s
+      )
+    );
+  }
+
+  async function handleUpdateStep(stepId: string, data: StepFormData) {
+    const { error } = await supabase
+      .from("steps")
+      .update({
+        title: data.title,
+        description: data.description,
+        skill_level: data.skill_level,
+        estimated_minutes: data.estimated_minutes,
+        tools_needed: data.tools_needed,
+      })
+      .eq("id", stepId);
+
+    if (error) {
+      alert("Failed to save step.");
+      return;
+    }
+
+    setStages((prev) =>
+      prev.map((stage) => ({
+        ...stage,
+        steps: stage.steps.map((step) =>
+          step.id === stepId
+            ? {
+                ...step,
+                title: data.title,
+                description: data.description,
+                skill_level: data.skill_level,
+                estimated_minutes: data.estimated_minutes,
+                tools_needed: data.tools_needed,
+              }
+            : step
+        ),
+      }))
+    );
+  }
+
+  async function handleDeleteStep(stepId: string) {
+    const { error } = await supabase.from("steps").delete().eq("id", stepId);
+    if (error) {
+      alert("Failed to delete step.");
+      return;
+    }
+    setStages((prev) =>
+      prev.map((stage) => ({
+        ...stage,
+        steps: stage.steps.filter((s) => s.id !== stepId),
+      }))
+    );
+  }
+
+  async function handleMoveStep(stepId: string, direction: "up" | "down") {
+    // Find which stage contains the step
+    const stage = stages.find((s) => s.steps.some((st) => st.id === stepId));
+    if (!stage) return;
+    const index = stage.steps.findIndex((s) => s.id === stepId);
+    const targetIndex = direction === "up" ? index - 1 : index + 1;
+    if (targetIndex < 0 || targetIndex >= stage.steps.length) return;
+
+    const a = stage.steps[index];
+    const b = stage.steps[targetIndex];
+
+    // Optimistic update
+    const newSteps = [...stage.steps];
+    newSteps[index] = { ...b, sort_order: a.sort_order };
+    newSteps[targetIndex] = { ...a, sort_order: b.sort_order };
+    setStages((prev) =>
+      prev.map((s) =>
+        s.id === stage.id ? { ...s, steps: newSteps } : s
+      )
+    );
+
+    const { error: e1 } = await supabase
+      .from("steps")
+      .update({ sort_order: b.sort_order })
+      .eq("id", a.id);
+    const { error: e2 } = await supabase
+      .from("steps")
+      .update({ sort_order: a.sort_order })
+      .eq("id", b.id);
+
+    if (e1 || e2) {
+      alert("Failed to reorder step. Refreshing.");
+      router.refresh();
+    }
   }
 
   async function handleMoveStage(stageId: string, direction: "up" | "down") {
@@ -404,10 +530,17 @@ export function StageList({
                           key={step.id}
                           step={step}
                           index={sIdx}
+                          total={stage.steps.length}
                           isNext={step.id === nextStepId}
                           onToggle={handleStepToggle}
+                          onEdit={handleUpdateStep}
+                          onDelete={handleDeleteStep}
+                          onMove={handleMoveStep}
                         />
                       ))}
+                      <AddStepButton
+                        onCreate={(data) => handleCreateStep(stage.id, data)}
+                      />
                     </div>
                   </div>
                 )}
