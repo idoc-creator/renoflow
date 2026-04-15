@@ -18,6 +18,7 @@ import StageEditForm, { type StageFormData } from "./StageEditForm";
 import ConfirmDelete from "./ConfirmDelete";
 import AddStepButton from "./AddStepButton";
 import type { StepFormData } from "./StepEditForm";
+import type { SubTask } from "./SubTaskList";
 
 const statusColors: Record<string, string> = {
   pending: "bg-cream text-warm-gray",
@@ -213,6 +214,10 @@ export function StageList({
       -1
     );
 
+    const allSubDone =
+      data.sub_tasks.length > 0 &&
+      data.sub_tasks.every((t) => t.is_completed);
+
     const { data: inserted, error } = await supabase
       .from("steps")
       .insert({
@@ -223,8 +228,10 @@ export function StageList({
         estimated_minutes: data.estimated_minutes,
         tools_needed: data.tools_needed,
         materials_needed: [],
+        sub_tasks: data.sub_tasks,
+        tips: data.tips,
         sort_order: maxSort + 1,
-        is_completed: false,
+        is_completed: allSubDone,
       })
       .select("*")
       .single();
@@ -244,6 +251,10 @@ export function StageList({
   }
 
   async function handleUpdateStep(stepId: string, data: StepFormData) {
+    const allSubDone =
+      data.sub_tasks.length > 0 &&
+      data.sub_tasks.every((t) => t.is_completed);
+
     const { error } = await supabase
       .from("steps")
       .update({
@@ -252,6 +263,10 @@ export function StageList({
         skill_level: data.skill_level,
         estimated_minutes: data.estimated_minutes,
         tools_needed: data.tools_needed,
+        sub_tasks: data.sub_tasks,
+        tips: data.tips,
+        is_completed:
+          data.sub_tasks.length > 0 ? allSubDone : undefined,
       })
       .eq("id", stepId);
 
@@ -272,6 +287,12 @@ export function StageList({
                 skill_level: data.skill_level,
                 estimated_minutes: data.estimated_minutes,
                 tools_needed: data.tools_needed,
+                sub_tasks: data.sub_tasks,
+                tips: data.tips,
+                is_completed:
+                  data.sub_tasks.length > 0
+                    ? allSubDone
+                    : step.is_completed,
               }
             : step
         ),
@@ -291,6 +312,47 @@ export function StageList({
         steps: stage.steps.filter((s) => s.id !== stepId),
       }))
     );
+  }
+
+  async function handleUpdateSubTasks(stepId: string, next: SubTask[]) {
+    const allDone = next.length > 0 && next.every((t) => t.is_completed);
+
+    // Optimistic update
+    setStages((prev) =>
+      prev.map((stage) => ({
+        ...stage,
+        steps: stage.steps.map((step) =>
+          step.id === stepId
+            ? {
+                ...step,
+                sub_tasks: next,
+                is_completed:
+                  next.length > 0 ? allDone : step.is_completed,
+              }
+            : step
+        ),
+      }))
+    );
+
+    const updatePayload: {
+      sub_tasks: SubTask[];
+      is_completed?: boolean;
+      completed_at?: string | null;
+    } = { sub_tasks: next };
+
+    if (next.length > 0) {
+      updatePayload.is_completed = allDone;
+      updatePayload.completed_at = allDone ? new Date().toISOString() : null;
+    }
+
+    const { error } = await supabase
+      .from("steps")
+      .update(updatePayload)
+      .eq("id", stepId);
+
+    if (error) {
+      console.error("Failed to update sub-tasks", error);
+    }
   }
 
   async function handleMoveStep(stepId: string, direction: "up" | "down") {
@@ -522,14 +584,19 @@ export function StageList({
                           index={sIdx}
                           total={stage.steps.length}
                           isNext={step.id === nextStepId}
+                          projectId={projectId}
+                          stageTitle={stage.title}
                           onToggle={handleStepToggle}
                           onEdit={handleUpdateStep}
                           onDelete={handleDeleteStep}
                           onMove={handleMoveStep}
+                          onUpdateSubTasks={handleUpdateSubTasks}
                         />
                       ))}
                       <AddStepButton
                         onCreate={(data) => handleCreateStep(stage.id, data)}
+                        projectId={projectId}
+                        stageTitle={stage.title}
                       />
                     </div>
                   </div>

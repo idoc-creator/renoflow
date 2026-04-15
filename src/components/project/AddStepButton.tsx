@@ -6,14 +6,22 @@ import StepEditForm, { type StepFormData } from "./StepEditForm";
 
 interface AddStepButtonProps {
   onCreate: (data: StepFormData) => void | Promise<void>;
+  stageTitle?: string;
+  projectId?: string;
 }
 
-export default function AddStepButton({ onCreate }: AddStepButtonProps) {
+export default function AddStepButton({
+  onCreate,
+  stageTitle,
+  projectId,
+}: AddStepButtonProps) {
   const [open, setOpen] = useState(false);
 
   if (open) {
     return (
       <StepEditForm
+        stageTitle={stageTitle}
+        projectId={projectId}
         onSave={async (data) => {
           await onCreate(data);
           setOpen(false);

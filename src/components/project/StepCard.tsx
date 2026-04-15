@@ -10,6 +10,7 @@ import {
   FiArrowDown,
 } from "react-icons/fi";
 import StepEditForm, { type StepFormData } from "./StepEditForm";
+import SubTaskList, { type SubTask } from "./SubTaskList";
 import ConfirmDelete from "./ConfirmDelete";
 
 const skillColors: Record<string, string> = {
@@ -27,6 +28,8 @@ export interface StepData {
   estimated_minutes: number;
   tools_needed: string[];
   materials_needed: unknown;
+  sub_tasks: SubTask[];
+  tips: string | null;
   is_completed: boolean;
   sort_order: number;
 }
@@ -36,10 +39,13 @@ interface StepCardProps {
   index: number;
   total: number;
   isNext: boolean;
+  projectId?: string;
+  stageTitle?: string;
   onToggle: (stepId: string, completed: boolean) => void;
   onEdit: (stepId: string, data: StepFormData) => Promise<void>;
   onDelete: (stepId: string) => Promise<void>;
   onMove: (stepId: string, direction: "up" | "down") => Promise<void>;
+  onUpdateSubTasks: (stepId: string, next: SubTask[]) => void | Promise<void>;
 }
 
 export function StepCard({
@@ -47,10 +53,13 @@ export function StepCard({
   index,
   total,
   isNext,
+  projectId,
+  stageTitle,
   onToggle,
   onEdit,
   onDelete,
   onMove,
+  onUpdateSubTasks,
 }: StepCardProps) {
   const [completed, setCompleted] = useState(step.is_completed);
   const [loading, setLoading] = useState(false);
@@ -58,7 +67,19 @@ export function StepCard({
   const [deleting, setDeleting] = useState(false);
   const [deleteLoading, setDeleteLoading] = useState(false);
 
+  const subTasks: SubTask[] = Array.isArray(step.sub_tasks)
+    ? step.sub_tasks
+    : [];
+  const subCompleted = subTasks.filter((t) => t.is_completed).length;
+  const subTotal = subTasks.length;
+  const subProgressPct =
+    subTotal > 0 ? Math.round((subCompleted / subTotal) * 100) : 0;
+
   async function handleToggle() {
+    // If the step has sub-tasks, the step's completion is driven by them.
+    // Manual toggle only makes sense when there are no sub-tasks.
+    if (subTotal > 0) return;
+
     const newValue = !completed;
     setCompleted(newValue);
     setLoading(true);
@@ -91,6 +112,8 @@ export function StepCard({
     return (
       <StepEditForm
         initial={step}
+        projectId={projectId}
+        stageTitle={stageTitle}
         onSave={async (data) => {
           await onEdit(step.id, data);
           setEditing(false);
@@ -101,13 +124,19 @@ export function StepCard({
     );
   }
 
+  // Step is considered visually "done" if either:
+  // - no sub-tasks and is_completed=true
+  // - has sub-tasks and all are complete
+  const visuallyDone =
+    subTotal > 0 ? subCompleted === subTotal : completed;
+
   return (
     <>
       <div
         className={`flex gap-2 rounded-lg border p-3 transition-colors ${
-          isNext && !completed
+          isNext && !visuallyDone
             ? "border-sage/40 bg-sage/5"
-            : completed
+            : visuallyDone
               ? "border-border-warm bg-cream"
               : "border-border-warm"
         }`}
@@ -132,17 +161,24 @@ export function StepCard({
           </button>
         </div>
 
+        {/* Step checkbox — manual only when no sub-tasks */}
         <button
           onClick={handleToggle}
-          disabled={loading}
+          disabled={loading || subTotal > 0}
           className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 transition-colors ${
-            completed
+            visuallyDone
               ? "border-sage bg-sage text-white"
-              : "border-border-warm hover:border-sage"
-          }`}
-          aria-label={completed ? "Mark incomplete" : "Mark complete"}
+              : "border-border-warm hover:border-sage disabled:hover:border-border-warm"
+          } ${subTotal > 0 ? "cursor-default" : ""}`}
+          aria-label={
+            subTotal > 0
+              ? "Complete sub-tasks to finish this step"
+              : visuallyDone
+                ? "Mark incomplete"
+                : "Mark complete"
+          }
         >
-          {completed && (
+          {visuallyDone && (
             <svg
               className="h-3 w-3"
               fill="none"
@@ -160,50 +196,82 @@ export function StepCard({
         </button>
 
         <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
             <span className="text-[10px] font-bold text-warm-gray">
               {index + 1}
             </span>
             <p
               className={`font-medium text-sm ${
-                completed ? "text-warm-gray line-through" : "text-charcoal"
+                visuallyDone ? "text-warm-gray line-through" : "text-charcoal"
               }`}
             >
               {step.title}
             </p>
-            {isNext && !completed && (
+            {isNext && !visuallyDone && (
               <span className="rounded-full bg-sage px-2 py-0.5 text-[9px] font-bold uppercase text-white">
                 Next
               </span>
             )}
           </div>
+
           {step.description && (
-            <p
-              className={`mt-0.5 text-xs ${
-                completed ? "text-warm-gray" : "text-warm-gray"
-              }`}
-            >
+            <p className="mt-0.5 text-xs text-warm-gray">
               {step.description}
             </p>
           )}
+
           <div className="mt-2 flex flex-wrap gap-2">
-            <span
-              className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium ${
-                skillColors[step.skill_level] || "bg-cream text-charcoal"
-              }`}
-            >
-              {step.skill_level?.replace("_", " ")}
-            </span>
+            {step.skill_level && (
+              <span
+                className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium ${
+                  skillColors[step.skill_level] || "bg-cream text-charcoal"
+                }`}
+              >
+                {step.skill_level?.replace("_", " ")}
+              </span>
+            )}
             {step.estimated_minutes > 0 && (
               <span className="inline-flex items-center gap-0.5 text-[10px] text-warm-gray">
-                <FiClock className="h-2.5 w-2.5" />~{step.estimated_minutes} min
+                <FiClock className="h-2.5 w-2.5" />~{step.estimated_minutes}{" "}
+                min
               </span>
             )}
           </div>
+
+          {/* Sub-task progress */}
+          {subTotal > 0 && (
+            <div className="mt-2">
+              <div className="flex items-center justify-between text-[10px] text-warm-gray mb-1">
+                <span>
+                  {subCompleted} of {subTotal} sub-tasks
+                </span>
+              </div>
+              <div className="h-1 w-full overflow-hidden rounded-full bg-cream">
+                <div
+                  className="h-full bg-sage transition-all duration-300"
+                  style={{ width: `${subProgressPct}%` }}
+                />
+              </div>
+              <div className="mt-2">
+                <SubTaskList
+                  subTasks={subTasks}
+                  onChange={(next) => onUpdateSubTasks(step.id, next)}
+                  editable={false}
+                />
+              </div>
+            </div>
+          )}
+
           {step.tools_needed?.length > 0 && (
-            <p className="mt-1 text-[10px] text-warm-gray">
+            <p className="mt-2 text-[10px] text-warm-gray">
               Tools: {step.tools_needed.join(", ")}
             </p>
+          )}
+
+          {step.tips && step.tips.trim() && (
+            <div className="mt-2 rounded-md bg-sage/5 border border-sage/20 p-2 text-[11px] text-charcoal whitespace-pre-wrap">
+              {step.tips}
+            </div>
           )}
         </div>
 
