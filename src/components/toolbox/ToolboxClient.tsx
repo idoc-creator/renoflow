@@ -54,6 +54,7 @@ export default function ToolboxClient({ initialItems }: ToolboxClientProps) {
         purchase_price: data.purchase_price,
         manual_url: data.manual_url,
         consumables: data.consumables,
+        catalog_entry_id: data.catalog_entry_id,
       })
       .select("*")
       .single();

@@ -22,6 +22,7 @@ export interface ToolFormData {
   purchase_price: number | null;
   manual_url: string | null;
   consumables: Consumable[];
+  catalog_entry_id: string | null;
 }
 
 interface ToolEditFormProps {
@@ -76,6 +77,7 @@ export default function ToolEditForm({
       purchase_price: purchasePrice ? parseFloat(purchasePrice) : null,
       manual_url: manualUrl.trim() || null,
       consumables: consumables.filter((c) => c.name.trim().length > 0),
+      catalog_entry_id: (initial as { catalog_entry_id?: string })?.catalog_entry_id ?? null,
     });
     setSaving(false);
   }

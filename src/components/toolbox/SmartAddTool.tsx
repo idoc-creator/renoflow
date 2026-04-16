@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { FiCamera, FiMaximize, FiEdit3, FiX } from "react-icons/fi";
 import ToolEditForm, { type ToolFormData } from "./ToolEditForm";
+import CatalogSearch from "./CatalogSearch";
 import type { ToolCategory, ToolboxItem } from "./types";
 
 type Tab = "manual" | "scan" | "photo";
@@ -60,12 +61,20 @@ export default function SmartAddTool({ onSave, onClose }: SmartAddToolProps) {
           </div>
 
           {tab === "manual" && (
-            <ToolEditForm
-              initial={prefill}
-              onSave={onSave}
-              onCancel={onClose}
-              saveLabel="Add tool"
-            />
+            <>
+              <CatalogSearch
+                onSelect={(data) => {
+                  setPrefill(data);
+                }}
+              />
+              <ToolEditForm
+                key={prefill?.name ?? "empty"}
+                initial={prefill}
+                onSave={onSave}
+                onCancel={onClose}
+                saveLabel="Add tool"
+              />
+            </>
           )}
 
           {tab === "scan" && (
