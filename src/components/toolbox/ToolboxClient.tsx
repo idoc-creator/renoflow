@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { FiPlus } from "react-icons/fi";
+import { FiPlus, FiBox } from "react-icons/fi";
+import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import ToolCard from "./ToolCard";
 import ToolModal from "./ToolModal";
@@ -136,13 +137,22 @@ export default function ToolboxClient({ initialItems }: ToolboxClientProps) {
             Tools and PPE you own. Pick from here when planning projects.
           </p>
         </div>
-        <button
-          onClick={() => setAddOpen(true)}
-          className="inline-flex items-center gap-2 rounded-lg bg-terracotta hover:bg-terracotta-dark px-4 py-2.5 text-sm font-semibold text-white transition-colors"
-        >
-          <FiPlus className="h-4 w-4" />
-          Add tool
-        </button>
+        <div className="flex items-center gap-3">
+          <Link
+            href="/shed"
+            className="inline-flex items-center gap-2 rounded-lg border border-border-warm bg-white hover:bg-cream px-4 py-2.5 text-sm font-medium text-warm-gray hover:text-charcoal transition-colors"
+          >
+            <FiBox className="h-4 w-4" />
+            Browse Shed
+          </Link>
+          <button
+            onClick={() => setAddOpen(true)}
+            className="inline-flex items-center gap-2 rounded-lg bg-terracotta hover:bg-terracotta-dark px-4 py-2.5 text-sm font-semibold text-white transition-colors"
+          >
+            <FiPlus className="h-4 w-4" />
+            Add tool
+          </button>
+        </div>
       </div>
 
       {/* Category tabs */}
