@@ -12,6 +12,7 @@ import {
 import StepEditForm, { type StepFormData } from "./StepEditForm";
 import SubTaskList, { type SubTask } from "./SubTaskList";
 import ConfirmDelete from "./ConfirmDelete";
+import type { StepTool } from "./ToolPicker";
 
 const skillColors: Record<string, string> = {
   beginner: "bg-green-50 text-green-700",
@@ -29,6 +30,7 @@ export interface StepData {
   tools_needed: string[];
   materials_needed: unknown;
   sub_tasks: SubTask[];
+  step_tools: StepTool[];
   tips: string | null;
   is_completed: boolean;
   sort_order: number;
@@ -262,10 +264,29 @@ export function StepCard({
             </div>
           )}
 
-          {step.tools_needed?.length > 0 && (
-            <p className="mt-2 text-[10px] text-warm-gray">
-              Tools: {step.tools_needed.join(", ")}
-            </p>
+          {/* Tool chips */}
+          {(step.step_tools?.length > 0 || step.tools_needed?.length > 0) && (
+            <div className="mt-2 flex flex-wrap gap-1">
+              {(step.step_tools?.length > 0
+                ? step.step_tools
+                : step.tools_needed?.map((t) => ({
+                    name: t,
+                    toolbox_item_id: null,
+                    need_to_buy: false,
+                  })) ?? []
+              ).map((tool, i) => (
+                <span
+                  key={`${tool.name}-${i}`}
+                  className={`inline-flex items-center gap-0.5 rounded-full px-2 py-0.5 text-[10px] font-medium ${
+                    tool.need_to_buy
+                      ? "bg-terracotta/10 text-terracotta"
+                      : "bg-sage/10 text-sage-dark"
+                  }`}
+                >
+                  {tool.need_to_buy ? "🛒" : "✓"} {tool.name}
+                </span>
+              ))}
+            </div>
           )}
 
           {step.tips && step.tips.trim() && (

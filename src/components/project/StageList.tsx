@@ -18,6 +18,7 @@ import StageEditForm, { type StageFormData } from "./StageEditForm";
 import ConfirmDelete from "./ConfirmDelete";
 import AddStepButton from "./AddStepButton";
 import type { StepFormData } from "./StepEditForm";
+import type { StepTool } from "./ToolPicker";
 import type { SubTask } from "./SubTaskList";
 
 const statusColors: Record<string, string> = {
@@ -228,6 +229,7 @@ export function StageList({
         skill_level: data.skill_level || null,
         estimated_minutes: data.estimated_minutes,
         tools_needed: data.tools_needed,
+        step_tools: data.step_tools,
         materials_needed: [],
         sub_tasks: data.sub_tasks,
         tips: data.tips,
@@ -266,6 +268,7 @@ export function StageList({
         skill_level: data.skill_level || null,
         estimated_minutes: data.estimated_minutes,
         tools_needed: data.tools_needed,
+        step_tools: data.step_tools,
         sub_tasks: data.sub_tasks,
         tips: data.tips,
         is_completed:
@@ -291,6 +294,7 @@ export function StageList({
                 skill_level: data.skill_level,
                 estimated_minutes: data.estimated_minutes,
                 tools_needed: data.tools_needed,
+                step_tools: data.step_tools,
                 sub_tasks: data.sub_tasks,
                 tips: data.tips,
                 is_completed:

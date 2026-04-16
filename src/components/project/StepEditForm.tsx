@@ -4,6 +4,7 @@ import { useState } from "react";
 import { FiTool, FiChevronDown, FiChevronRight } from "react-icons/fi";
 import SubTaskList, { type SubTask } from "./SubTaskList";
 import RoughItInPreview from "./RoughItInPreview";
+import ToolPicker, { type StepTool } from "./ToolPicker";
 
 export interface StepFormData {
   title: string;
@@ -11,6 +12,7 @@ export interface StepFormData {
   skill_level: string;
   estimated_minutes: number;
   tools_needed: string[];
+  step_tools: StepTool[];
   sub_tasks: SubTask[];
   tips: string | null;
 }
@@ -56,8 +58,15 @@ export default function StepEditForm({
       ? String(initial.estimated_minutes)
       : ""
   );
-  const [toolsText, setToolsText] = useState(
-    initial?.tools_needed ? initial.tools_needed.join(", ") : ""
+  const [stepTools, setStepTools] = useState<StepTool[]>(
+    initial?.step_tools ??
+      (initial?.tools_needed
+        ? initial.tools_needed.map((t) => ({
+            name: t,
+            toolbox_item_id: null,
+            need_to_buy: false,
+          }))
+        : [])
   );
   const [advancedOpen, setAdvancedOpen] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -72,10 +81,8 @@ export default function StepEditForm({
       description: description.trim(),
       skill_level: skillLevel,
       estimated_minutes: minutes ? parseInt(minutes, 10) : 0,
-      tools_needed: toolsText
-        .split(",")
-        .map((t) => t.trim())
-        .filter((t) => t.length > 0),
+      tools_needed: stepTools.map((t) => t.name),
+      step_tools: stepTools,
       sub_tasks: subTasks,
       tips,
     });
@@ -97,15 +104,17 @@ export default function StepEditForm({
 
     // Merge tools (append, dedupe case-insensitive)
     if (accepted.tools.length > 0) {
-      const existing = toolsText
-        .split(",")
-        .map((t) => t.trim())
-        .filter((t) => t.length > 0);
-      const existingLower = new Set(existing.map((t) => t.toLowerCase()));
-      const newTools = accepted.tools.filter(
-        (t) => !existingLower.has(t.toLowerCase())
+      const existingNames = new Set(
+        stepTools.map((t) => t.name.toLowerCase())
       );
-      setToolsText([...existing, ...newTools].join(", "));
+      const newTools: StepTool[] = accepted.tools
+        .filter((t) => !existingNames.has(t.toLowerCase()))
+        .map((t) => ({
+          name: t,
+          toolbox_item_id: null,
+          need_to_buy: true,
+        }));
+      setStepTools((prev) => [...prev, ...newTools]);
     }
 
     // Merge tips (append as markdown bullets)
@@ -240,16 +249,10 @@ export default function StepEditForm({
                 </div>
               </div>
               <div>
-                <label className="block text-xs font-semibold text-charcoal mb-1">
-                  Tools (comma separated)
+                <label className="block text-xs font-semibold text-charcoal mb-2">
+                  Tools
                 </label>
-                <input
-                  type="text"
-                  value={toolsText}
-                  onChange={(e) => setToolsText(e.target.value)}
-                  placeholder="e.g., reciprocating saw, pry bar"
-                  className="w-full px-3 py-2 bg-white rounded-md border border-border-warm text-sm focus:outline-none focus:border-terracotta"
-                />
+                <ToolPicker tools={stepTools} onChange={setStepTools} />
               </div>
             </div>
           )}
