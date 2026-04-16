@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from "react";
 import { FiPlus, FiBox } from "react-icons/fi";
-import Link from "next/link";
+import ShedPanel from "./ShedPanel";
 import { createClient } from "@/lib/supabase/client";
 import ToolCard from "./ToolCard";
 import ToolModal from "./ToolModal";
@@ -26,6 +26,7 @@ export default function ToolboxClient({ initialItems }: ToolboxClientProps) {
     "all"
   );
   const [addOpen, setAddOpen] = useState(false);
+  const [shedOpen, setShedOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<ToolboxItem | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [deleteLoading, setDeleteLoading] = useState(false);
@@ -138,13 +139,13 @@ export default function ToolboxClient({ initialItems }: ToolboxClientProps) {
           </p>
         </div>
         <div className="flex items-center gap-3">
-          <Link
-            href="/shed"
+          <button
+            onClick={() => setShedOpen(true)}
             className="inline-flex items-center gap-2 rounded-lg border border-border-warm bg-white hover:bg-cream px-4 py-2.5 text-sm font-medium text-warm-gray hover:text-charcoal transition-colors"
           >
             <FiBox className="h-4 w-4" />
             Browse Shed
-          </Link>
+          </button>
           <button
             onClick={() => setAddOpen(true)}
             className="inline-flex items-center gap-2 rounded-lg bg-terracotta hover:bg-terracotta-dark px-4 py-2.5 text-sm font-semibold text-white transition-colors"
@@ -230,6 +231,35 @@ export default function ToolboxClient({ initialItems }: ToolboxClientProps) {
         onConfirm={() => deletingId && handleDelete(deletingId)}
         onCancel={() => setDeletingId(null)}
         loading={deleteLoading}
+      />
+
+      {/* Shed slide-over panel */}
+      <ShedPanel
+        open={shedOpen}
+        onClose={() => setShedOpen(false)}
+        onAddToToolbox={async (entry) => {
+          // Pre-fill from catalog entry and create
+          await handleCreate({
+            name: entry.name,
+            category: (entry.category as ToolFormData["category"]) ?? "other",
+            make: entry.make,
+            model: entry.model,
+            status: "ready",
+            location: null,
+            notes: entry.description,
+            purchase_price: entry.avg_price,
+            manual_url: entry.manual_url,
+            consumables: (entry.typical_consumables ?? []).map((c, i) => ({
+              id: `shed-${i}-${Math.random().toString(36).slice(2, 6)}`,
+              name: typeof c === "string" ? c : c.name,
+              quantity_on_hand: 0,
+              reorder_date: null,
+              notes: null,
+            })),
+            catalog_entry_id: entry.id,
+          });
+          setShedOpen(false);
+        }}
       />
     </div>
   );
