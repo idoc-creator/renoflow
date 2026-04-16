@@ -18,7 +18,6 @@ import StageEditForm, { type StageFormData } from "./StageEditForm";
 import ConfirmDelete from "./ConfirmDelete";
 import AddStepButton from "./AddStepButton";
 import type { StepFormData } from "./StepEditForm";
-import type { StepTool } from "./ToolPicker";
 import type { SubTask } from "./SubTaskList";
 
 const statusColors: Record<string, string> = {
