@@ -5,7 +5,6 @@ import { usePathname } from "next/navigation";
 import {
   FiHome,
   FiTool,
-  FiBox,
   FiShoppingCart,
   FiDollarSign,
   FiLogOut,
@@ -17,7 +16,6 @@ import { useState } from "react";
 const navItems = [
   { href: "/bunker", label: "Projects", icon: FiHome },
   { href: "/bunker/toolbox", label: "My Toolbox", icon: FiTool },
-  { href: "/shed", label: "Storage Shed", icon: FiBox },
   { href: "/bunker/shopping-list", label: "Shopping List", icon: FiShoppingCart },
   { href: "/bunker/earnings", label: "Earnings", icon: FiDollarSign },
 ];
