@@ -21,6 +21,12 @@ export default function TopNav({ isAuthed }: TopNavProps) {
             className="w-full px-4 py-2 bg-white rounded-full border border-border-warm text-sm focus:outline-none focus:border-terracotta"
           />
         </div>
+        <Link
+          href="/shed"
+          className="hidden sm:inline-block text-sm text-warm-gray hover:text-charcoal whitespace-nowrap"
+        >
+          Storage Shed
+        </Link>
         <div className="ml-auto">
           {isAuthed ? (
             <Link
