@@ -3,7 +3,6 @@ export type ToolCategory =
   | "power_tool"
   | "ppe"
   | "measuring"
-  | "safety"
   | "other";
 
 export type ToolStatus =
@@ -47,7 +46,6 @@ export const CATEGORIES: Array<{
   { value: "power_tool", label: "Power Tools" },
   { value: "ppe", label: "PPE" },
   { value: "measuring", label: "Measuring" },
-  { value: "safety", label: "Safety" },
   { value: "other", label: "Other" },
 ];
 
