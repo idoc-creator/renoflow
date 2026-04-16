@@ -5,6 +5,7 @@ import { FiPlus } from "react-icons/fi";
 import { createClient } from "@/lib/supabase/client";
 import ToolCard from "./ToolCard";
 import ToolModal from "./ToolModal";
+import SmartAddTool from "./SmartAddTool";
 import ConfirmDelete from "@/components/project/ConfirmDelete";
 import type { ToolFormData } from "./ToolEditForm";
 import {
@@ -197,13 +198,12 @@ export default function ToolboxClient({ initialItems }: ToolboxClientProps) {
       )}
 
       {/* Modals */}
-      <ToolModal
-        open={addOpen}
-        title="Add a tool"
-        saveLabel="Add tool"
-        onSave={handleCreate}
-        onClose={() => setAddOpen(false)}
-      />
+      {addOpen && (
+        <SmartAddTool
+          onSave={handleCreate}
+          onClose={() => setAddOpen(false)}
+        />
+      )}
       <ToolModal
         open={editingItem !== null}
         initial={editingItem ?? undefined}
