@@ -2,16 +2,24 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { FiClipboard, FiImage, FiShoppingBag } from "react-icons/fi";
+import {
+  FiGrid,
+  FiClipboard,
+  FiImage,
+  FiDollarSign,
+  FiCamera,
+} from "react-icons/fi";
 
 interface ProjectNavProps {
   projectId: string;
 }
 
 const tabs = [
-  { key: "plan", label: "Plan", icon: FiClipboard, href: "" },
+  { key: "overview", label: "Overview", icon: FiGrid, href: "" },
+  { key: "plan", label: "Plan", icon: FiClipboard, href: "/plan" },
   { key: "mood-board", label: "Mood Board", icon: FiImage, href: "/mood-board" },
-  { key: "shopping-list", label: "Shopping List", icon: FiShoppingBag, href: "/shopping-list" },
+  { key: "budget", label: "Budget", icon: FiDollarSign, href: "/budget" },
+  { key: "photos", label: "Photos", icon: FiCamera, href: "/photos" },
 ];
 
 export function ProjectNav({ projectId }: ProjectNavProps) {
@@ -19,21 +27,21 @@ export function ProjectNav({ projectId }: ProjectNavProps) {
   const base = `/bunker/project/${projectId}`;
 
   function isActive(tab: (typeof tabs)[number]) {
-    if (tab.key === "plan") {
+    if (tab.key === "overview") {
       return pathname === base;
     }
     return pathname === `${base}${tab.href}`;
   }
 
   return (
-    <nav className="flex gap-1 rounded-lg bg-cream p-1">
+    <nav className="flex gap-1 rounded-lg bg-cream p-1 overflow-x-auto">
       {tabs.map((tab) => {
         const active = isActive(tab);
         return (
           <Link
             key={tab.key}
             href={`${base}${tab.href}`}
-            className={`flex items-center gap-1.5 rounded-md px-3 py-2 text-sm font-medium transition-colors ${
+            className={`flex items-center gap-1.5 rounded-md px-3 py-2 text-sm font-medium transition-colors whitespace-nowrap ${
               active
                 ? "bg-white text-sage-dark shadow-sm"
                 : "text-warm-gray hover:text-charcoal"
