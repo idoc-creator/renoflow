@@ -37,12 +37,15 @@ const CATEGORY_FILTERS = [
   { key: "outdoor", label: "Outdoor" },
 ];
 
-/** Assign a varying aspect ratio to each card index so the grid breathes. */
-const ASPECTS = [
+/**
+ * Fallback aspect ratios for cards WITHOUT a cover photo. Image cards let
+ * the image's natural aspect drive their height for true Pinterest feel —
+ * this rotation only applies to gradient placeholders.
+ */
+const GRADIENT_ASPECTS = [
   "aspect-[4/5]",
   "aspect-[3/4]",
   "aspect-[1/1]",
-  "aspect-[4/5]",
   "aspect-[5/6]",
   "aspect-[4/6]",
 ];
@@ -237,10 +240,12 @@ export function ProjectGrid({ cards }: { cards: ProjectCardData[] }) {
         </div>
       )}
 
-      {/* Masonry via CSS columns so cards can have varied heights.
-          break-inside: avoid keeps each card intact across the column break. */}
+      {/* Masonry via CSS columns — 2 cols on mobile (Pinterest-style),
+          3 on tablet, 4 on desktop. Tight gaps, varied card heights.
+          Image cards use the photo's natural aspect; gradient cards rotate
+          through the fallback set. */}
       {organized.length > 0 ? (
-        <div className="columns-1 gap-4 sm:columns-2 lg:columns-3 [&>*]:mb-4">
+        <div className="columns-2 gap-2 sm:columns-3 sm:gap-3 lg:columns-4 [&>*]:mb-2 sm:[&>*]:mb-3">
           {organized.map((p, idx) => (
             <div
               key={p.id}
@@ -249,7 +254,9 @@ export function ProjectGrid({ cards }: { cards: ProjectCardData[] }) {
             >
               <ProjectCard
                 project={p}
-                aspectClass={ASPECTS[idx % ASPECTS.length]}
+                gradientAspect={
+                  GRADIENT_ASPECTS[idx % GRADIENT_ASPECTS.length]
+                }
               />
             </div>
           ))}
