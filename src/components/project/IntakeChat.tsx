@@ -13,15 +13,27 @@ import {
 import { createClient } from "@/lib/supabase/client";
 import PlanReview, { type PlanPreview } from "./PlanReview";
 
+interface QuickPick {
+  label: string;
+  value: string;
+}
+
 interface Message {
   role: "user" | "assistant";
   content: string;
   recap?: string | null;
+  options?: QuickPick[] | null;
 }
 
 interface SubProject {
   title: string;
   reason_it_came_up: string;
+}
+
+interface ParentLink {
+  parent_project_id: string;
+  parent_project_name: string;
+  reason: string;
 }
 
 interface Progress {
@@ -56,6 +68,10 @@ export function IntakeChat({
   const [creatingSub, setCreatingSub] = useState<string | null>(null);
   const [isMock, setIsMock] = useState(false);
   const [preview, setPreview] = useState<PlanPreview | null>(null);
+  const [parentLink, setParentLink] = useState<ParentLink | null>(null);
+  const [linkingParent, setLinkingParent] = useState(false);
+  const [parentLinkApplied, setParentLinkApplied] = useState(false);
+  const [currentOptions, setCurrentOptions] = useState<QuickPick[] | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   // Kick off the first assistant message once on mount.
@@ -95,12 +111,14 @@ export function IntakeChat({
       if (data.mock) setIsMock(true);
       setIntake(data.intake ?? {});
       setProgress(data.progress ?? null);
+      setCurrentOptions(data.options ?? null);
       setMessages((prev) => [
         ...prev,
         {
           role: "assistant",
           content: data.reply,
           recap: data.progress?.recap ?? null,
+          options: data.options ?? null,
         },
       ]);
       if (data.detected_sub_projects?.length > 0) {
@@ -111,6 +129,9 @@ export function IntakeChat({
           );
           return [...prev, ...fresh];
         });
+      }
+      if (data.suggested_parent_link && !parentLinkApplied) {
+        setParentLink(data.suggested_parent_link as ParentLink);
       }
       if (data.is_complete) {
         setComplete(true);
@@ -129,7 +150,53 @@ export function IntakeChat({
     const next: Message[] = [...messages, { role: "user", content: text }];
     setMessages(next);
     setInput("");
+    setCurrentOptions(null); // clear picks once user submits text
     await sendTurn(next);
+  }
+
+  async function handleQuickPick(label: string, value: string) {
+    if (sending) return;
+    // Display the human label, send the machine value so capture matches cleanly
+    const next: Message[] = [...messages, { role: "user", content: label }];
+    setMessages(next);
+    setCurrentOptions(null);
+    // Send the value (not label) to the API for more reliable parsing
+    await sendTurn([
+      ...messages,
+      { role: "user", content: value },
+    ]);
+  }
+
+  async function handleLinkParent() {
+    if (!parentLink) return;
+    setLinkingParent(true);
+    try {
+      const supabase = createClient();
+      // Find an existing "catch-all" stage on the parent or create one
+      const { data: stages } = await supabase
+        .from("stages")
+        .select("id, title, sort_order")
+        .eq("project_id", parentLink.parent_project_id)
+        .order("sort_order", { ascending: false })
+        .limit(1);
+      const nextSort = stages?.[0]?.sort_order != null ? stages[0].sort_order + 1 : 0;
+      await supabase.from("stages").insert({
+        project_id: parentLink.parent_project_id,
+        title: projectName,
+        description: `Sub-project linked from intake.`,
+        reason:
+          "You said this project is part of your parent project — linking the two so progress and budget roll up.",
+        sort_order: nextSort,
+        status: "pending",
+        linked_project_id: projectId,
+      });
+      setParentLinkApplied(true);
+      setParentLink(null);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Couldn't link parent.");
+    } finally {
+      setLinkingParent(false);
+    }
   }
 
   async function handleGeneratePlan() {
@@ -297,29 +364,54 @@ export function IntakeChat({
             Warming up…
           </div>
         )}
-        {messages.map((m, i) => (
-          <div key={i} className="space-y-1">
-            {m.recap && m.role === "assistant" && (
-              <div className="rounded-lg bg-sage/10 border border-sage/30 px-3 py-2 text-xs text-sage-dark">
-                <span className="font-semibold">Recap: </span>
-                {m.recap}
-              </div>
-            )}
-            <div
-              className={`flex ${m.role === "user" ? "justify-end" : "justify-start"}`}
-            >
+        {messages.map((m, i) => {
+          const isLatestAssistant =
+            m.role === "assistant" &&
+            i === messages.length - 1 &&
+            currentOptions &&
+            currentOptions.length > 0 &&
+            !sending;
+          return (
+            <div key={i} className="space-y-1">
+              {m.recap && m.role === "assistant" && (
+                <div className="rounded-lg bg-sage/10 border border-sage/30 px-3 py-2 text-xs text-sage-dark">
+                  <span className="font-semibold">Recap: </span>
+                  {m.recap}
+                </div>
+              )}
               <div
-                className={`max-w-[85%] rounded-2xl px-4 py-2.5 text-sm whitespace-pre-wrap ${
-                  m.role === "user"
-                    ? "bg-terracotta text-white rounded-br-sm"
-                    : "bg-cream text-charcoal rounded-bl-sm"
-                }`}
+                className={`flex ${m.role === "user" ? "justify-end" : "justify-start"}`}
               >
-                {m.content}
+                <div
+                  className={`max-w-[85%] rounded-2xl px-4 py-2.5 text-sm whitespace-pre-wrap ${
+                    m.role === "user"
+                      ? "bg-terracotta text-white rounded-br-sm"
+                      : "bg-cream text-charcoal rounded-bl-sm"
+                  }`}
+                >
+                  {m.content}
+                </div>
               </div>
+              {isLatestAssistant && (
+                <div className="flex flex-wrap gap-1.5 pt-1">
+                  {currentOptions!.map((opt) => (
+                    <button
+                      key={opt.value}
+                      onClick={() => handleQuickPick(opt.label, opt.value)}
+                      disabled={sending}
+                      className="rounded-full border border-border-warm bg-white px-3 py-1.5 text-xs font-medium text-charcoal hover:border-terracotta hover:bg-terracotta/5 transition-colors disabled:opacity-50"
+                    >
+                      {opt.label}
+                    </button>
+                  ))}
+                  <span className="text-[11px] text-warm-gray self-center">
+                    or type your answer
+                  </span>
+                </div>
+              )}
             </div>
-          </div>
-        ))}
+          );
+        })}
         {sending && messages.length > 0 && (
           <div className="flex justify-start">
             <div className="rounded-2xl rounded-bl-sm bg-cream px-4 py-2.5 text-sm text-warm-gray inline-flex items-center gap-2">
@@ -335,6 +427,38 @@ export function IntakeChat({
           </div>
         )}
       </div>
+
+      {/* Parent-project link suggestion */}
+      {parentLink && !parentLinkApplied && (
+        <div className="rounded-2xl border border-sage/40 bg-sage/5 p-4 space-y-2">
+          <p className="text-sm font-semibold text-sage-dark">
+            Link as a sub-project?
+          </p>
+          <p className="text-xs text-warm-gray">{parentLink.reason}</p>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={handleLinkParent}
+              disabled={linkingParent}
+              className="rounded-lg bg-sage hover:bg-sage-dark text-white text-xs font-semibold px-3 py-1.5 disabled:opacity-50"
+            >
+              {linkingParent
+                ? "Linking…"
+                : `Yes — link to "${parentLink.parent_project_name}"`}
+            </button>
+            <button
+              onClick={() => setParentLink(null)}
+              className="text-xs text-warm-gray hover:text-charcoal px-2 py-1.5"
+            >
+              Not now
+            </button>
+          </div>
+        </div>
+      )}
+      {parentLinkApplied && (
+        <div className="rounded-lg bg-sage/10 border border-sage/30 px-3 py-2 text-xs text-sage-dark">
+          Linked as a sub-project. You&apos;ll see it as a stage on the parent.
+        </div>
+      )}
 
       {/* Side-build detection strip */}
       {detectedSubs.length > 0 && (

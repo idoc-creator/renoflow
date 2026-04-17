@@ -78,12 +78,30 @@ STYLE:
 - If the user says skip permits, honor it. Mention resale risk ONCE gently, drop it.
 - When an answer is vague, gently probe once. Don't interrogate.
 
+WHY-FIRST COPY: Give the reason (one line) before asking. Bad: "Is this your full-time home?" Good: "In many states, homeowners can pull permits on their own primary residence — it saves money. What's the setup here?"
+
+USE QUICK-PICK OPTIONS when the answer space is small. In your reply JSON, include an \`options\` array of { label, value } for yes/no, skill 1-5, materials picker, etc. The UI renders them as buttons.
+
+HANDLE UNPARSEABLE REPLIES: If the user's reply doesn't answer your question, acknowledge it explicitly ("Didn't quite catch that — let me rephrase: ..."). Don't silently re-ask the same question.
+
+RENOVATION FLOW — scope first, THEN DIY/hire:
+1. Ask WHAT is changing (plumbing reconfig / fixtures / electrical reconfig / fixtures / structural walls / new framing / surface only / HVAC). Multi-select.
+2. THEN for each trade in the selected scope, ask DIY vs hire vs unsure.
+3. Do NOT ask about plumbing/electrical DIY if the project is surface-only.
+
+PROFILE-AWARE: If the context block tells you the user has saved defaults (AHJ, currency, residence), skip those questions unless the user indicates the project is at a different location.
+
+CURRENCY: If the user's profile currency is USD (default), phrase budgets with $ and USD. If it's something else, use that currency.
+
 STRUCTURE OF EACH RESPONSE (JSON):
-- reply: the next question only. Short. DO NOT prepend the recap — the UI renders recap as a separate bubble.
-- intake_patch: ONLY fields you learned this turn. Don't re-send captured ones.
-- progress: { captured_count, estimated_total (varies by category — 5 for craft, 10+ for reno), recap (string or null) }
-- is_complete: true only on the wrap turn.
+- reply: the next question only, with its why-preamble inline. Short. DO NOT prepend the recap.
+- options: optional array of quick picks { label, value } when applicable.
+- intake_patch: ONLY fields you learned this turn.
+- progress: { captured_count, estimated_total (5 for craft/decor, 7 for furniture, 10+ for reno), recap }
+- is_complete: true on the wrap turn.
 - detected_sub_projects: side builds mentioned this turn.
+- suggested_parent_link: if context lists user's other projects and the reply references one (e.g. "this vanity is for my bathroom remodel"), surface it here with {parent_project_id, parent_project_name, reason}.
+- needs_clarification: true if you couldn't parse the last reply.
 
 ${INTAKE_FIELDS_DOC}
 
@@ -93,6 +111,18 @@ const RESPONSE_SCHEMA = {
   type: "object" as const,
   properties: {
     reply: { type: "string" as const },
+    options: {
+      type: ["array", "null"] as const,
+      items: {
+        type: "object" as const,
+        properties: {
+          label: { type: "string" as const },
+          value: { type: "string" as const },
+        },
+        required: ["label", "value"],
+        additionalProperties: false,
+      },
+    },
     intake_patch: {
       type: "object" as const,
       additionalProperties: true,
@@ -120,6 +150,17 @@ const RESPONSE_SCHEMA = {
         additionalProperties: false,
       },
     },
+    suggested_parent_link: {
+      type: ["object", "null"] as const,
+      properties: {
+        parent_project_id: { type: "string" as const },
+        parent_project_name: { type: "string" as const },
+        reason: { type: "string" as const },
+      },
+      required: ["parent_project_id", "parent_project_name", "reason"],
+      additionalProperties: false,
+    },
+    needs_clarification: { type: "boolean" as const },
   },
   required: [
     "reply",
@@ -171,6 +212,34 @@ export async function POST(request: Request) {
     return Response.json({ error: "Project not found" }, { status: 404 });
   }
 
+  // Load profile defaults so we can skip "asked before" questions
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select(
+      "default_ahj_city, default_ahj_county, default_ahj_state, default_ahj_country, default_currency, is_primary_residence_default"
+    )
+    .eq("id", user.id)
+    .single();
+
+  const profileDefaults = profile
+    ? {
+        ahj_city: profile.default_ahj_city,
+        ahj_county: profile.default_ahj_county,
+        ahj_state: profile.default_ahj_state,
+        ahj_country: profile.default_ahj_country,
+        currency: profile.default_currency,
+        is_primary_residence: profile.is_primary_residence_default,
+      }
+    : undefined;
+
+  // Other active projects for parent-project detection
+  const { data: otherProjects } = await supabase
+    .from("projects")
+    .select("id, name")
+    .eq("user_id", user.id)
+    .neq("id", projectId)
+    .limit(50);
+
   // No API key? Fall back to the scripted mock so the UX can be tested
   // end-to-end without configuration.
   if (!client) {
@@ -181,6 +250,8 @@ export async function POST(request: Request) {
       projectName: project.name,
       userTurns,
       intakeSoFar: intakeSoFar ?? {},
+      userProjects: otherProjects ?? [],
+      profileDefaults,
     });
 
     const merged = {
@@ -212,10 +283,13 @@ export async function POST(request: Request) {
 
     return Response.json({
       reply: mock.reply,
+      options: mock.options ?? null,
       intake: merged,
       progress: mock.progress,
       is_complete: mock.is_complete,
       detected_sub_projects: mock.detected_sub_projects,
+      suggested_parent_link: mock.suggested_parent_link ?? null,
+      needs_clarification: mock.needs_clarification === true,
       mock: true,
     });
   }
@@ -226,7 +300,13 @@ Project name: ${project.name}
 Project category hint (from project row): ${project.category || "not yet known"}
 Intake captured so far: ${JSON.stringify(intakeSoFar ?? {}, null, 2)}
 
-If the chat messages below are empty, this is the FIRST turn — kick off the interview with a warm opener that references the project name and asks the most useful first question (typically: "tell me what you want to do and why" in your own words).`;
+USER PROFILE DEFAULTS (skip these questions unless the user indicates the project is at a different location or in a different context):
+${JSON.stringify(profileDefaults ?? {}, null, 2)}
+
+OTHER PROJECTS OWNED BY THIS USER (for suggested_parent_link detection — if the user references one during this project's intake, surface it):
+${JSON.stringify((otherProjects ?? []).map((p) => ({ id: p.id, name: p.name })), null, 2)}
+
+If the chat messages below are empty, this is the FIRST turn — kick off the interview with a warm opener that references the project name and asks the most useful first question (typically: "tell me what you're building and why" in your own words).`;
 
   const chatMessages: Anthropic.MessageParam[] = messages.map((m) => ({
     role: m.role,
@@ -296,10 +376,13 @@ If the chat messages below are empty, this is the FIRST turn — kick off the in
 
     return Response.json({
       reply: parsed.reply,
+      options: parsed.options ?? null,
       intake: merged,
       progress: parsed.progress,
       is_complete: parsed.is_complete,
       detected_sub_projects: parsed.detected_sub_projects ?? [],
+      suggested_parent_link: parsed.suggested_parent_link ?? null,
+      needs_clarification: parsed.needs_clarification === true,
     });
   } catch (error) {
     console.error("Intake error:", error);

@@ -8,12 +8,14 @@ import {
   FiLogOut,
   FiMenu,
   FiX,
+  FiSettings,
 } from "react-icons/fi";
 import { useState } from "react";
 
 const navItems = [
   { href: "/bunker", label: "Projects", icon: FiHome },
   { href: "/bunker/toolbox", label: "My Toolbox", icon: FiTool },
+  { href: "/bunker/preferences", label: "Preferences", icon: FiSettings },
 ];
 
 export function BunkerShell({

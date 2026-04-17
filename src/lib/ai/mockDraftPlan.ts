@@ -51,8 +51,25 @@ export function runMockDraftPlan(
   const isOldHouse = typeof yearBuilt === "number" && yearBuilt < 1980;
   const electricalHired = hired.includes("electrical");
 
-  if (category === "craft" || category === "furniture") {
-    return buildGenericMakerPlan(projectName);
+  if (category === "furniture") {
+    return buildFurniturePlan(projectName, intake);
+  }
+  if (category === "craft") {
+    return buildCraftPlan(projectName);
+  }
+  if (category === "decor") {
+    return buildDecorPlan(projectName);
+  }
+  if (category === "outdoor") {
+    return buildOutdoorPlan(projectName);
+  }
+
+  // Renovation — if not a bathroom, we still need a reasonable default
+  const renoType = (specifics as Record<string, unknown>).reno_type as
+    | string
+    | undefined;
+  if (renoType && renoType !== "bathroom" && renoType !== "kitchen") {
+    return buildGenericRenoPlan(projectName, renoType, intake);
   }
 
   // Bathroom-ish plan.
@@ -456,75 +473,552 @@ export function runMockDraftPlan(
   return { stages, suggested_milestones: milestones };
 }
 
-function buildGenericMakerPlan(projectName: string): MockPlanOutput {
+function buildFurniturePlan(
+  projectName: string,
+  intake: Record<string, unknown>
+): MockPlanOutput {
+  const specifics =
+    (intake.specifics as Record<string, unknown> | undefined) ?? {};
+  const materials = (specifics.materials as string) || "whatever wood fits";
+  const isVanity = /vanity/i.test(projectName) || /vanity/i.test(
+    (intake.project_goal as string) ?? ""
+  );
+
   return {
     stages: [
       {
-        title: "Plan & source",
-        description: `Sketch the build for ${projectName}, size the wood/materials, and order.`,
-        reason: "A plan you can measure from prevents the 'wrong size' re-buy.",
-        estimated_cost: 120,
+        title: "Design & measure",
+        description: `Nail down dimensions, joinery choice, and hardware for ${projectName}.`,
+        reason:
+          "Paper (or SketchUp) is cheap. Wood is not. The sketch tells you exactly how many board-feet, how many fasteners, and what order to cut.",
+        estimated_cost: 40,
         estimated_hours: 3,
         steps: [
           {
-            title: "Sketch + dimensions",
-            description: "Pencil it out. Write every dimension.",
+            title: "Measure the space",
+            description: isVanity
+              ? "Measure the opening where the vanity goes — width, depth, height. Leave ~1/4\" clearance on each side. Note plumbing rough-in locations for drain + supply stubs."
+              : "Measure where the piece will live. Note floor irregularities and any clearance constraints (doorways, outlets, trim).",
             skill_level: "beginner",
-            estimated_minutes: 60,
-            tools_needed: ["tape measure", "pencil"],
+            estimated_minutes: 30,
+            tools_needed: ["tape measure", "pencil", "painter's tape"],
+          },
+          {
+            title: "Sketch + dimensioned drawing",
+            description:
+              "Front, side, top views with every dimension written out. Call out joinery (pocket screws, dominoes, dowels, dadoes). Decide on hardware BEFORE the cut list — drawer slides and hinges dictate case dimensions.",
+            skill_level: "beginner",
+            estimated_minutes: 90,
+            tools_needed: ["graph paper", "ruler", "pencil"],
           },
           {
             title: "Cut list + shopping list",
-            description: "Go to the store once.",
+            description: `Write every piece: length × width × thickness × quantity. Figure board-feet needed in ${materials}. Add 15-20% for mistakes.`,
             skill_level: "beginner",
-            estimated_minutes: 30,
+            estimated_minutes: 45,
             tools_needed: [],
           },
         ],
       },
       {
-        title: "Build",
-        description: "Cut, assemble, sand.",
-        reason: "",
-        estimated_cost: 150,
+        title: "Source materials",
+        description: "Get the wood, hardware, and finish on hand before cutting.",
+        reason:
+          "Going back to the store mid-build kills momentum — and finish schedules (stain + seal drying) eat more days than the woodworking itself.",
+        estimated_cost: 350,
+        estimated_hours: 3,
+        steps: [
+          {
+            title: "Buy lumber + sheet goods",
+            description:
+              "Hit a hardwood dealer or lumber yard. Hand-pick boards — look for flat, straight, minimal knots where they'll show.",
+            skill_level: "beginner",
+            estimated_minutes: 90,
+            tools_needed: ["vehicle / rack", "straps"],
+          },
+          {
+            title: "Buy hardware + finish",
+            description: isVanity
+              ? "Drawer slides, pulls, hinges, and any slab/sink mounting brackets. Pick your finish now (oil, water-based poly, shellac) — the look drives topcoat choice."
+              : "Hinges, pulls, slides, fasteners, finish. Don't underestimate finish quantity.",
+            skill_level: "beginner",
+            estimated_minutes: 45,
+            tools_needed: [],
+          },
+        ],
+      },
+      {
+        title: "Mill & cut parts",
+        description:
+          "Rough-mill to size, then final-cut per the cut list. Label everything.",
+        reason:
+          "Accurate parts = easy assembly. The hour you spend squaring parts saves three hours of fighting gaps later.",
+        estimated_cost: 0,
         estimated_hours: 6,
         steps: [
           {
-            title: "Cut to size",
-            description: "Measure twice.",
+            title: "Rough-cut lumber to workable lengths",
+            description:
+              "Crosscut boards a couple inches longer than final — stress in boards releases once cut, so rough-first, finish-second.",
             skill_level: "intermediate",
-            estimated_minutes: 120,
-            tools_needed: ["saw"],
+            estimated_minutes: 90,
+            tools_needed: ["miter saw or circular saw", "stop block"],
           },
           {
-            title: "Assemble",
-            description: "Glue + clamps + screws.",
+            title: "Joint + plane to thickness",
+            description:
+              "If you have a jointer/planer, face-joint + edge-joint + thickness-plane each board. If not, buy S4S pre-milled — much costlier but beginner-friendly.",
+            skill_level: "intermediate",
+            estimated_minutes: 120,
+            tools_needed: ["jointer", "planer"],
+          },
+          {
+            title: "Final cuts per cut list",
+            description:
+              "Use a stop block for identical pieces. Label each part with a pencil mark — front, back, sides, top, shelves.",
+            skill_level: "intermediate",
+            estimated_minutes: 120,
+            tools_needed: ["table saw or track saw", "square", "pencil"],
+          },
+        ],
+      },
+      {
+        title: "Joinery",
+        description: "Cut the joints that hold the piece together.",
+        reason:
+          "Joinery is where amateur builds fail. Pick ONE method you're comfortable with and repeat — don't mix five techniques on your first build.",
+        estimated_cost: 20,
+        estimated_hours: 5,
+        steps: [
+          {
+            title: "Mark joinery locations",
+            description:
+              "Dry-assemble the case, mark where every joint goes with a pencil and square. Check that everything's square before a single cut.",
+            skill_level: "intermediate",
+            estimated_minutes: 60,
+            tools_needed: ["combination square", "marking gauge"],
+          },
+          {
+            title: "Cut the joints",
+            description:
+              "Pocket screws for beginners; dominoes or dowels if you have the jigs; hand-cut dadoes with a router. One method, used consistently.",
             skill_level: "intermediate",
             estimated_minutes: 180,
-            tools_needed: ["drill", "clamps"],
+            tools_needed: ["pocket hole jig", "drill", "clamps"],
+          },
+        ],
+      },
+      {
+        title: "Dry-fit & assemble",
+        description: "Assemble without glue first. Then glue up.",
+        reason:
+          "Every build has surprises at glue-up. Catching a 1/8\" gap during the dry-fit costs nothing; catching it after the glue sets is brutal.",
+        estimated_cost: 15,
+        estimated_hours: 4,
+        steps: [
+          {
+            title: "Dry-fit the whole piece",
+            description:
+              "Clamp it together with no glue. Check every joint, every diagonal (measure opposite corners — equal = square), every surface.",
+            skill_level: "intermediate",
+            estimated_minutes: 60,
+            tools_needed: ["clamps", "tape measure"],
+          },
+          {
+            title: "Glue up in stages",
+            description:
+              "Break the assembly into 2-3 sub-assemblies if it's complex. Open time matters — use slow-setting glue (30+ min open) for anything past a single panel.",
+            skill_level: "intermediate",
+            estimated_minutes: 120,
+            tools_needed: ["wood glue", "clamps", "dead-blow mallet", "wet rag"],
+          },
+          {
+            title: "Install drawers, doors, hardware",
+            description:
+              "Drawer slides first, then drawers. Door hinges, then pulls. Test every movement before declaring done.",
+            skill_level: "intermediate",
+            estimated_minutes: 120,
+            tools_needed: ["drill", "bits", "level"],
+          },
+        ],
+      },
+      {
+        title: "Sand & finish",
+        description: "Progressive sanding, then stain/finish.",
+        reason:
+          "The finish makes or breaks the piece visually. Skipping grits leaves scratches that only show up after the first coat — when it's too late to fix easily.",
+        estimated_cost: 60,
+        estimated_hours: 6,
+        steps: [
+          {
+            title: "Sand progressively",
+            description:
+              "80 → 120 → 180 → 220 grit. Don't skip. Each grit removes the scratches from the previous one. Vacuum + tack cloth between grits.",
+            skill_level: "beginner",
+            estimated_minutes: 150,
+            tools_needed: ["random orbit sander", "sandpaper assortment", "tack cloth"],
+          },
+          {
+            title: "Apply stain (if staining)",
+            description:
+              "Pre-conditioner on softwoods. Test on scrap. Wipe with the grain, wait 5 min, wipe off excess.",
+            skill_level: "beginner",
+            estimated_minutes: 90,
+            tools_needed: ["foam brush", "rags"],
+          },
+          {
+            title: "Apply topcoat — 3 coats minimum",
+            description:
+              "Polyurethane or water-based finish. Thin first coat, sand lightly between coats with 320 grit. Let each coat cure fully.",
+            skill_level: "beginner",
+            estimated_minutes: 180,
+            tools_needed: ["brush or spray gun", "sandpaper"],
+          },
+        ],
+      },
+      ...(isVanity
+        ? [
+            {
+              title: "Install in bathroom",
+              description:
+                "Set the vanity, hook up plumbing, attach top/sink.",
+              reason:
+                "If this is a sub-project of a bathroom remodel, time this AFTER tile is done and the finished-floor height is known.",
+              estimated_cost: 100,
+              estimated_hours: 3,
+              steps: [
+                {
+                  title: "Position + level",
+                  description:
+                    "Dry-fit in the opening, shim until level in both axes, mark the wall for anchor screws into studs.",
+                  skill_level: "intermediate",
+                  estimated_minutes: 45,
+                  tools_needed: ["level", "shims", "stud finder"],
+                },
+                {
+                  title: "Hook up plumbing",
+                  description:
+                    "Shutoffs to angle stops → faucet supply lines. Drain: P-trap to waste line. Silicone around the drain flange.",
+                  skill_level: "intermediate",
+                  estimated_minutes: 60,
+                  tools_needed: ["channel locks", "silicone"],
+                },
+                {
+                  title: "Top, sink, caulk",
+                  description:
+                    "Set the top (if separate from cabinet), install the sink, caulk the perimeter to the wall.",
+                  skill_level: "beginner",
+                  estimated_minutes: 60,
+                  tools_needed: ["caulk gun", "100% silicone"],
+                },
+              ],
+            } as Stage,
+          ]
+        : []),
+    ],
+    suggested_milestones: [
+      {
+        title: "Materials arrive / sourced",
+        kind: "delivery",
+        notes:
+          "Specialty hardwoods and matching hardware can run 2-4 weeks if you're not at a big box. Order early.",
+        blocks_stage_index: 2,
+      },
+    ],
+  };
+}
+
+function buildCraftPlan(projectName: string): MockPlanOutput {
+  return {
+    stages: [
+      {
+        title: "Design",
+        description: `Sketch out what you want ${projectName} to look like.`,
+        reason: "Even a rough sketch turns a vague idea into something you can execute.",
+        estimated_cost: 0,
+        estimated_hours: 1,
+        steps: [
+          {
+            title: "Sketch + size",
+            description: "Rough sketch + target dimensions.",
+            skill_level: "beginner",
+            estimated_minutes: 30,
+            tools_needed: ["paper", "pencil"],
+          },
+        ],
+      },
+      {
+        title: "Gather materials",
+        description: "Source what you need.",
+        reason: "Batch sourcing saves runs back to the store.",
+        estimated_cost: 60,
+        estimated_hours: 1,
+        steps: [
+          {
+            title: "Shop for materials",
+            description: "Hit the craft store with a complete list.",
+            skill_level: "beginner",
+            estimated_minutes: 60,
+            tools_needed: [],
+          },
+        ],
+      },
+      {
+        title: "Make it",
+        description: "Put it together.",
+        reason: "",
+        estimated_cost: 0,
+        estimated_hours: 3,
+        steps: [
+          {
+            title: "Build / create",
+            description: "The actual making.",
+            skill_level: "intermediate",
+            estimated_minutes: 180,
+            tools_needed: [],
           },
         ],
       },
       {
         title: "Finish",
-        description: "Stain, seal, done.",
+        description: "Final touches.",
         reason: "",
-        estimated_cost: 40,
+        estimated_cost: 10,
+        estimated_hours: 1,
+        steps: [
+          {
+            title: "Final pass",
+            description: "Clean up, polish, sign your work.",
+            skill_level: "beginner",
+            estimated_minutes: 45,
+            tools_needed: [],
+          },
+        ],
+      },
+    ],
+    suggested_milestones: [],
+  };
+}
+
+function buildDecorPlan(projectName: string): MockPlanOutput {
+  return {
+    stages: [
+      {
+        title: "Plan the look",
+        description: `Decide what ${projectName} needs.`,
+        reason: "Decor without a plan becomes clutter.",
+        estimated_cost: 0,
+        estimated_hours: 1,
+        steps: [
+          {
+            title: "Mood board",
+            description: "Gather references, colors, textures.",
+            skill_level: "beginner",
+            estimated_minutes: 45,
+            tools_needed: [],
+          },
+        ],
+      },
+      {
+        title: "Source",
+        description: "Buy what you need.",
+        reason: "",
+        estimated_cost: 150,
         estimated_hours: 2,
         steps: [
           {
-            title: "Sand to 220",
-            description: "Don't skip grits.",
+            title: "Shop",
+            description: "Hit stores / online with a list.",
             skill_level: "beginner",
-            estimated_minutes: 45,
-            tools_needed: ["sandpaper"],
+            estimated_minutes: 120,
+            tools_needed: [],
+          },
+        ],
+      },
+      {
+        title: "Install / style",
+        description: "Put it up.",
+        reason: "",
+        estimated_cost: 10,
+        estimated_hours: 2,
+        steps: [
+          {
+            title: "Hang + arrange",
+            description: "Level, center, adjust until it feels right.",
+            skill_level: "beginner",
+            estimated_minutes: 120,
+            tools_needed: ["drill", "level", "measuring tape"],
+          },
+        ],
+      },
+    ],
+    suggested_milestones: [],
+  };
+}
+
+function buildOutdoorPlan(projectName: string): MockPlanOutput {
+  return {
+    stages: [
+      {
+        title: "Plan & locate",
+        description: `Site, dimensions, and footings for ${projectName}.`,
+        reason:
+          "Where it sits matters for drainage, setbacks, and view. Call 811 before digging.",
+        estimated_cost: 30,
+        estimated_hours: 3,
+        steps: [
+          {
+            title: "Call 811 (or local equivalent)",
+            description: "Free utility locate — always do this before digging.",
+            skill_level: "beginner",
+            estimated_minutes: 15,
+            tools_needed: [],
           },
           {
-            title: "Finish + seal",
-            description: "Two coats minimum.",
+            title: "Lay out footprint",
+            description: "Stakes + string. Square the corners.",
             skill_level: "beginner",
-            estimated_minutes: 60,
-            tools_needed: ["brushes", "rags"],
+            estimated_minutes: 90,
+            tools_needed: ["stakes", "string", "tape measure"],
+          },
+        ],
+      },
+      {
+        title: "Foundation / footings",
+        description: "Concrete, posts, or piers.",
+        reason: "",
+        estimated_cost: 400,
+        estimated_hours: 10,
+        steps: [
+          {
+            title: "Dig holes",
+            description: "Below frost line in cold climates.",
+            skill_level: "intermediate",
+            estimated_minutes: 240,
+            tools_needed: ["post hole digger", "shovel"],
+          },
+          {
+            title: "Pour concrete / set posts",
+            description: "Mix, pour, level, wait to cure.",
+            skill_level: "intermediate",
+            estimated_minutes: 300,
+            tools_needed: ["wheelbarrow", "concrete mixer"],
+          },
+        ],
+      },
+      {
+        title: "Frame",
+        description: "Structural framing of the build.",
+        reason: "",
+        estimated_cost: 600,
+        estimated_hours: 12,
+        steps: [
+          {
+            title: "Build the frame",
+            description: "Per plan.",
+            skill_level: "intermediate",
+            estimated_minutes: 720,
+            tools_needed: ["circular saw", "drill", "impact driver"],
+          },
+        ],
+      },
+      {
+        title: "Finish",
+        description: "Cladding, roofing, seal.",
+        reason: "",
+        estimated_cost: 400,
+        estimated_hours: 10,
+        steps: [
+          {
+            title: "Install cladding / roofing",
+            description: "Per plan.",
+            skill_level: "intermediate",
+            estimated_minutes: 480,
+            tools_needed: [],
+          },
+          {
+            title: "Seal / stain",
+            description: "Protect from weather.",
+            skill_level: "beginner",
+            estimated_minutes: 120,
+            tools_needed: [],
+          },
+        ],
+      },
+    ],
+    suggested_milestones: [],
+  };
+}
+
+function buildGenericRenoPlan(
+  projectName: string,
+  renoType: string,
+  _intake: Record<string, unknown>
+): MockPlanOutput {
+  return {
+    stages: [
+      {
+        title: "Plan & test",
+        description: `Scope ${projectName} for your ${renoType}.`,
+        reason:
+          "Every reno opens with the same question: what's actually behind those walls? Test first.",
+        estimated_cost: 150,
+        estimated_hours: 4,
+        steps: [
+          {
+            title: "Measure + photo current state",
+            description: "Document everything before touching anything.",
+            skill_level: "beginner",
+            estimated_minutes: 90,
+            tools_needed: ["tape measure", "phone"],
+          },
+        ],
+      },
+      {
+        title: "Demo",
+        description: "Strip what's being replaced.",
+        reason: "",
+        estimated_cost: 300,
+        estimated_hours: 10,
+        steps: [
+          {
+            title: "Demo surfaces",
+            description: "Controlled demolition. Dust containment matters.",
+            skill_level: "intermediate",
+            estimated_minutes: 480,
+            tools_needed: ["pry bar", "hammer", "P100 respirator"],
+          },
+        ],
+      },
+      {
+        title: "Rough-in & repair",
+        description: "Fix the bones before finishes.",
+        reason: "",
+        estimated_cost: 800,
+        estimated_hours: 20,
+        steps: [
+          {
+            title: "Structural / mechanical rough-in",
+            description: "Per scope of work.",
+            skill_level: "advanced",
+            estimated_minutes: 1200,
+            tools_needed: [],
+          },
+        ],
+      },
+      {
+        title: "Finish",
+        description: "Surfaces, fixtures, paint.",
+        reason: "",
+        estimated_cost: 800,
+        estimated_hours: 14,
+        steps: [
+          {
+            title: "Finish work",
+            description: "Drywall, paint, flooring, trim.",
+            skill_level: "intermediate",
+            estimated_minutes: 840,
+            tools_needed: [],
           },
         ],
       },
