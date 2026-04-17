@@ -57,6 +57,7 @@ export default async function WhoItsForPage() {
               "You're tired of Pinterest rabbit holes that don't turn into plans",
               "You want to save real money by building it yourself",
               "You need a plan that respects how old your house is, not a generic template",
+              "You want to earn a cut when friends sign up through a project you share — no follower threshold",
             ]}
             source="who-its-for-diyer"
             roleInterest="diyer"
@@ -111,20 +112,28 @@ export default async function WhoItsForPage() {
       {/* Tier 4 — Ambassador */}
       <section className="border-b border-hairline bg-ivory">
         <div className="mx-auto max-w-5xl px-6 py-16 md:py-20">
+          <div className="mb-6 rounded-xl border border-moss/40 bg-moss/10 px-4 py-3 text-sm text-ink">
+            <span className="font-semibold text-moss-dark">Important:</span>{" "}
+            every DIYer using Bench is already an ambassador — share a
+            completed project link and you earn on anyone who signs up
+            through it, no follower threshold. The tier below is the
+            additional <em>featured</em> partnership for people with an
+            audience.
+          </div>
           <RoleCard
             Icon={MegaphoneSimple}
-            eyebrow="Tier 4 — Apply"
+            eyebrow="Tier 4 — Featured partnership"
             title="Brand Ambassador"
-            tagline="You&apos;re building publicly — let&apos;s collab."
-            body="You post real projects on YouTube, Instagram, TikTok, or your own blog. You&apos;d use Bench on projects you were going to do anyway, and you want early-access features, a direct line to the product team, and a share of referral revenue. Not aggressive pursuit — just honest alignment with people already doing the work."
+            tagline="You're building publicly and want deeper collab."
+            body="If you post real builds to an audience (YouTube, Instagram, TikTok, blog) and want more than the base referral program — early feature access, a direct product-team line, and a higher revenue share — this is the tier. You get all this on top of the standard referral program every DIYer has."
             signals={[
               "You publish real DIY / reno / craft projects to an audience",
-              "You want early access to features and a direct product-team line",
-              "You want to be paid for real referrals, not perform paid posts",
+              "You want a higher referral cut + early-access features",
+              "You'd use Bench on projects you were going to do anyway",
             ]}
             source="who-its-for-ambassador"
             roleInterest="ambassador"
-            cta="Apply as Ambassador"
+            cta="Apply as Featured Ambassador"
           />
         </div>
       </section>

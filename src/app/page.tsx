@@ -10,6 +10,7 @@ import {
 import { MarketingTopNav } from "@/components/marketing/MarketingTopNav";
 import { SiteFooter } from "@/components/marketing/SiteFooter";
 import { BetaSignupForm } from "@/components/marketing/BetaSignupForm";
+import { ProductTour } from "@/components/marketing/ProductTour";
 
 export const metadata = {
   title: "Bench — Stop pinning. Start building.",
@@ -48,6 +49,9 @@ export default async function LandingPage() {
           </div>
         </div>
       </section>
+
+      {/* A glance at the product */}
+      <ProductTour />
 
       {/* The pillars */}
       <section className="border-t border-hairline">
