@@ -62,7 +62,13 @@ export default function ProjectOverview({
             </p>
           ) : (
             <p className="text-warm-gray italic">
-              No description yet. Add one in project settings.
+              No description yet.{" "}
+              <Link
+                href={`/bunker/project/${project.id}/settings`}
+                className="text-terracotta hover:underline not-italic font-medium"
+              >
+                Add one in settings →
+              </Link>
             </p>
           )}
         </div>

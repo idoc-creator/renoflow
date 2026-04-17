@@ -1,6 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
 import { notFound } from "next/navigation";
-import { SavingsDashboard } from "@/components/project/SavingsDashboard";
 import { StageList, type StageData } from "@/components/project/StageList";
 
 export default async function ProjectPlanPage({
@@ -40,11 +39,6 @@ export default async function ProjectPlanPage({
     })
   );
 
-  const actualCostTotal = sortedStages.reduce(
-    (sum: number, s: StageData) => sum + (Number(s.actual_cost) || 0),
-    0
-  );
-
   return (
     <>
       {/* Summary */}
@@ -54,26 +48,7 @@ export default async function ProjectPlanPage({
         </div>
       )}
 
-      {/* Two-column layout: stages left, savings right */}
-      <div className="flex flex-col-reverse gap-6 lg:flex-row">
-        {/* Left column — stages */}
-        <div className="flex-1 min-w-0 lg:basis-2/3">
-          <StageList stages={sortedStages} projectId={id} />
-        </div>
-
-        {/* Right column — savings dashboard (sticky on desktop) */}
-        <div className="lg:basis-1/3">
-          <div className="lg:sticky lg:top-6">
-            <SavingsDashboard
-              contractorEstimate={Number(project.contractor_estimate) || 0}
-              diyEstimate={Number(project.diy_estimate) || 0}
-              budgetTotal={Number(project.budget_total) || 0}
-              budgetSpent={Number(project.budget_spent) || 0}
-              actualCostTotal={actualCostTotal}
-            />
-          </div>
-        </div>
-      </div>
+      <StageList stages={sortedStages} projectId={id} />
     </>
   );
 }
