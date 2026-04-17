@@ -1,31 +1,96 @@
 @import "tailwindcss";
 
-@theme inline {
-  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
-  --font-serif: var(--font-instrument-serif), ui-serif, Georgia, serif;
+/*
+  Bench design tokens. See docs/design-system.md for the spec.
 
-  --color-cream: #faf8f5;
+  Rule of thumb: this file is the single source of truth. Never hard-code a
+  color or font in a component — use a token.
+*/
+@theme inline {
+  /* Fonts */
+  --font-sans: var(--font-inter-tight), var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-serif: var(--font-fraunces), var(--font-instrument-serif), ui-serif, Georgia, serif;
+
+  /* Neutrals — editorial paper + warm ink */
+  --color-paper: #faf7f1;
+  --color-cream: #faf7f1;          /* alias — kept for existing classes */
   --color-surface: #ffffff;
-  --color-charcoal: #2d2a26;
-  --color-warm-gray: #78716c;
-  --color-terracotta: #c2714f;
-  --color-terracotta-dark: #a85b3b;
-  --color-sage: #6b8f71;
-  --color-sage-dark: #547a5a;
-  --color-warm-brown: #8b6f4e;
-  --color-border-warm: #e7e5e0;
+  --color-ink: #141211;
+  --color-charcoal: #141211;        /* alias */
+  --color-graphite: #57544f;
+  --color-warm-gray: #57544f;       /* alias */
+  --color-hairline: #d9d3c7;
+  --color-border-warm: #d9d3c7;     /* alias */
+
+  /* Accents — Pin Red is the iconic color */
+  --color-pin: #c1272d;
+  --color-terracotta: #c1272d;      /* alias */
+  --color-pin-dark: #8e1c22;
+  --color-terracotta-dark: #8e1c22; /* alias */
+
+  --color-moss: #4a7a5a;
+  --color-sage: #4a7a5a;            /* alias */
+  --color-moss-dark: #375e44;
+  --color-sage-dark: #375e44;       /* alias */
+
+  --color-rust: #8b6f4e;
+  --color-warm-brown: #8b6f4e;      /* alias */
+}
+
+/* Paper grid utility — notebook texture for empty states + text-heavy hero areas */
+.bg-grid {
+  background-image:
+    linear-gradient(to right, rgba(20, 18, 17, 0.04) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(20, 18, 17, 0.04) 1px, transparent 1px);
+  background-size: 24px 24px;
 }
 
 body {
-  background-color: var(--color-cream);
-  color: var(--color-charcoal);
+  background-color: var(--color-paper);
+  color: var(--color-ink);
   font-family: var(--font-sans);
+  font-weight: 500;              /* 500 reads cleaner than default 400 at small sizes */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-h1,
-h2,
-h3 {
+/* Display type: Fraunces, 600 by default, tight tracking */
+h1, h2, h3, h4, h5, h6 {
   font-family: var(--font-serif);
-  font-weight: 400;
-  letter-spacing: -0.01em;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: var(--color-ink);
+}
+
+h1 { font-size: 2rem; line-height: 1.15; }
+h2 { font-size: 1.5rem; line-height: 1.2; }
+h3 { font-size: 1.25rem; line-height: 1.3; }
+
+/* Display helpers for hero sections */
+.font-display-xl {
+  font-family: var(--font-serif);
+  font-weight: 600;
+  font-size: 3.5rem;
+  line-height: 1.05;
+  letter-spacing: -0.025em;
+}
+.font-display-lg {
+  font-family: var(--font-serif);
+  font-weight: 600;
+  font-size: 2.5rem;
+  line-height: 1.1;
+  letter-spacing: -0.025em;
+}
+.font-display {
+  font-family: var(--font-serif);
+  font-weight: 600;
+  font-size: 1.75rem;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+}
+
+.text-caption {
+  font-size: 0.75rem;
+  line-height: 1.4;
+  font-weight: 500;
 }
