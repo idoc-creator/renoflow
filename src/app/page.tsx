@@ -12,6 +12,7 @@ import { SiteFooter } from "@/components/marketing/SiteFooter";
 import { BetaSignupForm } from "@/components/marketing/BetaSignupForm";
 import { ProductTour } from "@/components/marketing/ProductTour";
 import { StampBadge } from "@/components/marketing/StampBadge";
+import { BrandMoment } from "@/components/marketing/BrandMoment";
 
 export const metadata = {
   title: "Bench — Stop pinning. Start building.",
@@ -57,6 +58,14 @@ export default async function LandingPage() {
           </div>
         </div>
       </section>
+
+      {/* Brand moment — breather between hero and tour.
+          Placeholder for now; swap imageUrl in when the real photo or
+          line-art illustration is ready. */}
+      <BrandMoment
+        quote={"Start where you are.\nBuild what you can.\nShare what worked."}
+        placeholderHint="workshop photo or line-art here"
+      />
 
       {/* A glance at the product */}
       <ProductTour />
