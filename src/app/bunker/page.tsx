@@ -2,6 +2,24 @@ import { createClient } from "@/lib/supabase/server";
 import Link from "next/link";
 import { FiPlus, FiFolder } from "react-icons/fi";
 import { NewProjectButton } from "@/components/NewProjectButton";
+import { ProjectCard, type ProjectCardData } from "@/components/bunker/ProjectCard";
+
+interface RawStage {
+  id: string;
+  linked_project_id: string | null;
+  steps: { id: string; is_completed: boolean }[] | null;
+}
+
+interface RawProject {
+  id: string;
+  name: string;
+  updated_at: string;
+  cover_image_url: string | null;
+  category: string | null;
+  status: string;
+  description: string | null;
+  stages: RawStage[] | null;
+}
 
 export default async function BunkerPage() {
   const supabase = await createClient();
@@ -9,18 +27,64 @@ export default async function BunkerPage() {
     data: { user },
   } = await supabase.auth.getUser();
 
-  let projects: { id: string; name: string; updated_at: string; cover_image_url: string | null }[] = [];
+  let cards: ProjectCardData[] = [];
 
   if (user) {
     const { data } = await supabase
       .from("projects")
-      .select("id, name, updated_at, cover_image_url")
+      .select(
+        `
+        id, name, updated_at, cover_image_url, category, status, description,
+        stages(id, linked_project_id, steps(id, is_completed))
+        `
+      )
       .eq("user_id", user.id)
       .order("updated_at", { ascending: false });
 
-    if (data) {
-      projects = data;
+    const raw = (data ?? []) as RawProject[];
+
+    // Build a map of child-id → parent project, so we can stamp
+    // "Part of [parent]" chips on projects that are sub-projects of another.
+    const parentByChildId = new Map<string, { id: string; name: string }>();
+    for (const p of raw) {
+      for (const stage of p.stages ?? []) {
+        if (stage.linked_project_id) {
+          parentByChildId.set(stage.linked_project_id, {
+            id: p.id,
+            name: p.name,
+          });
+        }
+      }
     }
+
+    cards = raw.map((p) => {
+      const stages = p.stages ?? [];
+      const stageCount = stages.length;
+      let stepCount = 0;
+      let completedStepCount = 0;
+      let subProjectCount = 0;
+      for (const s of stages) {
+        if (s.linked_project_id) subProjectCount += 1;
+        for (const step of s.steps ?? []) {
+          stepCount += 1;
+          if (step.is_completed) completedStepCount += 1;
+        }
+      }
+      return {
+        id: p.id,
+        name: p.name,
+        updated_at: p.updated_at,
+        cover_image_url: p.cover_image_url,
+        category: p.category,
+        status: p.status,
+        description: p.description,
+        stageCount,
+        stepCount,
+        completedStepCount,
+        subProjectCount,
+        parentProject: parentByChildId.get(p.id) ?? null,
+      };
+    });
   }
 
   return (
@@ -32,26 +96,10 @@ export default async function BunkerPage() {
       </div>
 
       {/* Projects grid or empty state */}
-      {projects.length > 0 ? (
+      {cards.length > 0 ? (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {projects.map((project) => (
-            <Link
-              key={project.id}
-              href={`/bunker/project/${project.id}`}
-              className="flex flex-col rounded-xl bg-white p-6 shadow-sm transition-shadow hover:shadow-md"
-            >
-              <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-lg bg-sage/10">
-                <FiFolder className="h-5 w-5 text-sage" />
-              </div>
-              <h3 className="font-semibold text-charcoal">{project.name}</h3>
-              <p className="mt-1 text-xs text-warm-gray">
-                Updated{" "}
-                {new Date(project.updated_at).toLocaleDateString("en-US", {
-                  month: "short",
-                  day: "numeric",
-                })}
-              </p>
-            </Link>
+          {cards.map((project) => (
+            <ProjectCard key={project.id} project={project} />
           ))}
         </div>
       ) : (
