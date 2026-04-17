@@ -3,7 +3,6 @@
 import Link from "next/link";
 import {
   FiClipboard,
-  FiDollarSign,
   FiTool,
   FiPackage,
   FiImage,
@@ -27,7 +26,6 @@ export interface ProjectCardData {
   stepCount: number;
   completedStepCount: number;
   subProjectCount: number;
-  /** Set if this project is itself a sub-project of another. */
   parentProject?: { id: string; name: string } | null;
 }
 
@@ -43,40 +41,43 @@ const CATEGORY_META: Record<
   renovation: {
     label: "Renovation",
     icon: FiHome,
-    gradient: "from-terracotta/20 to-terracotta/5",
+    gradient: "from-terracotta/30 via-terracotta/10 to-cream",
     accent: "text-terracotta-dark",
   },
   furniture: {
     label: "Furniture",
     icon: FiLayers,
-    gradient: "from-sage/20 to-sage/5",
+    gradient: "from-sage/30 via-sage/10 to-cream",
     accent: "text-sage-dark",
   },
   craft: {
     label: "Craft",
     icon: FiScissors,
-    gradient: "from-amber-200/40 to-amber-50",
+    gradient: "from-amber-200 via-amber-100 to-cream",
     accent: "text-amber-800",
   },
   decor: {
     label: "Decor",
     icon: FiImage,
-    gradient: "from-pink-200/40 to-pink-50",
+    gradient: "from-pink-200 via-pink-100 to-cream",
     accent: "text-pink-800",
   },
   outdoor: {
     label: "Outdoor",
     icon: FiSun,
-    gradient: "from-blue-200/40 to-blue-50",
+    gradient: "from-blue-200 via-blue-100 to-cream",
     accent: "text-blue-800",
   },
 };
 
 const STATUS_LABEL: Record<string, { text: string; cls: string }> = {
-  planning: { text: "Planning", cls: "bg-cream text-warm-gray" },
-  in_progress: { text: "In progress", cls: "bg-sage/20 text-sage-dark" },
-  completed: { text: "Complete", cls: "bg-green-100 text-green-700" },
-  paused: { text: "Paused", cls: "bg-amber-50 text-amber-800" },
+  planning: { text: "Planning", cls: "bg-white/90 text-warm-gray" },
+  in_progress: {
+    text: "In progress",
+    cls: "bg-sage/90 text-white",
+  },
+  completed: { text: "Complete", cls: "bg-green-600/90 text-white" },
+  paused: { text: "Paused", cls: "bg-amber-500/90 text-white" },
 };
 
 function formatDate(iso: string): string {
@@ -86,7 +87,21 @@ function formatDate(iso: string): string {
   });
 }
 
-export function ProjectCard({ project }: { project: ProjectCardData }) {
+/**
+ * Card is image-first and full-bleed. With a photo, you see nothing but the
+ * photo (+ status pill + parent chip) until you hover — then an overlay fades
+ * in with the details. Without a photo, the card shows a category-tinted
+ * gradient with the project name visible by default so it's still scannable.
+ *
+ * `aspectClass` is passed in so the masonry grid can vary heights per card.
+ */
+export function ProjectCard({
+  project,
+  aspectClass = "aspect-[4/5]",
+}: {
+  project: ProjectCardData;
+  aspectClass?: string;
+}) {
   const catKey = (project.category || "other").toLowerCase();
   const meta = CATEGORY_META[catKey];
   const CategoryIcon = meta?.icon ?? FiFolder;
@@ -95,133 +110,103 @@ export function ProjectCard({ project }: { project: ProjectCardData }) {
     project.stepCount > 0
       ? Math.round((project.completedStepCount / project.stepCount) * 100)
       : 0;
+  const hasImage = !!project.cover_image_url;
 
   return (
     <Link
       href={`/bunker/project/${project.id}`}
-      className="group relative flex flex-col overflow-hidden rounded-2xl bg-white shadow-sm transition-all hover:shadow-md focus:outline-none focus:ring-2 focus:ring-terracotta"
+      className={`group relative block w-full overflow-hidden rounded-2xl shadow-sm transition-all hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-terracotta ${aspectClass}`}
     >
-      {/* Cover area — image if present, else gradient + category icon */}
-      <div className="relative aspect-[4/3] overflow-hidden">
-        {project.cover_image_url ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={project.cover_image_url}
-            alt={project.name}
-            className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+      {/* Base layer — photo or gradient */}
+      {hasImage ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src={project.cover_image_url!}
+          alt={project.name}
+          className="absolute inset-0 h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+        />
+      ) : (
+        <div
+          className={`absolute inset-0 flex flex-col items-center justify-center bg-gradient-to-br ${meta?.gradient ?? "from-cream to-border-warm"} p-4`}
+        >
+          <CategoryIcon
+            className={`h-16 w-16 ${meta?.accent ?? "text-warm-gray"} opacity-60 mb-3`}
           />
-        ) : (
-          <div
-            className={`flex h-full w-full items-center justify-center bg-gradient-to-br ${meta?.gradient ?? "from-cream to-border-warm"}`}
-          >
-            <CategoryIcon
-              className={`h-14 w-14 ${meta?.accent ?? "text-warm-gray"} opacity-60`}
-            />
-          </div>
-        )}
-
-        {/* Parent-project chip (top-left) */}
-        {project.parentProject && (
-          <div className="absolute left-3 top-3 inline-flex items-center gap-1 rounded-full bg-white/90 backdrop-blur-sm px-2 py-0.5 text-[10px] font-semibold text-terracotta-dark shadow-sm">
-            <FiLink className="h-3 w-3" />
-            Part of {project.parentProject.name}
-          </div>
-        )}
-
-        {/* Status pill (top-right) */}
-        <div className="absolute right-3 top-3">
-          <span
-            className={`rounded-full px-2 py-0.5 text-[10px] font-semibold backdrop-blur-sm ${status.cls}`}
-          >
-            {status.text}
-          </span>
-        </div>
-
-        {/* Hover overlay — only meaningful when we have an image.
-            On no-image cards the info is already visible below, but
-            this overlay still appears so the interaction feels the same. */}
-        <div className="pointer-events-none absolute inset-0 flex flex-col justify-end bg-gradient-to-t from-charcoal/85 via-charcoal/30 to-transparent p-4 opacity-0 transition-opacity duration-200 group-hover:opacity-100">
-          <h3 className="font-serif text-lg text-white drop-shadow">
+          <p className="text-center font-serif text-xl text-charcoal">
             {project.name}
-          </h3>
-          {project.description && (
-            <p className="mt-1 line-clamp-2 text-xs text-white/85">
-              {project.description}
-            </p>
-          )}
-          <div className="mt-2 flex flex-wrap items-center gap-2 text-[10px] text-white/90">
-            {meta?.label && (
-              <span className="rounded-full bg-white/20 px-2 py-0.5 font-medium backdrop-blur-sm">
-                {meta.label}
-              </span>
-            )}
-            <span className="inline-flex items-center gap-1">
-              <FiClipboard className="h-3 w-3" />
-              {project.stageCount} stage{project.stageCount === 1 ? "" : "s"}
-            </span>
-            <span className="inline-flex items-center gap-1">
-              <FiTool className="h-3 w-3" />
-              {project.completedStepCount}/{project.stepCount} steps
-            </span>
-            {project.subProjectCount > 0 && (
-              <span className="inline-flex items-center gap-1">
-                <FiPackage className="h-3 w-3" />
-                {project.subProjectCount} sub
-              </span>
-            )}
-          </div>
+          </p>
+          <p className={`mt-1 text-[11px] font-medium ${meta?.accent ?? "text-warm-gray"}`}>
+            {meta?.label ?? "Project"}
+          </p>
         </div>
+      )}
+
+      {/* Always-visible pills (top) */}
+      <div className="absolute inset-x-3 top-3 flex items-start justify-between gap-2">
+        {project.parentProject ? (
+          <span className="inline-flex items-center gap-1 rounded-full bg-white/90 backdrop-blur-sm px-2 py-0.5 text-[10px] font-semibold text-terracotta-dark shadow-sm max-w-[70%] truncate">
+            <FiLink className="h-3 w-3 shrink-0" />
+            <span className="truncate">Part of {project.parentProject.name}</span>
+          </span>
+        ) : (
+          <span />
+        )}
+        <span
+          className={`rounded-full px-2 py-0.5 text-[10px] font-semibold backdrop-blur-sm shadow-sm ${status.cls}`}
+        >
+          {status.text}
+        </span>
       </div>
 
-      {/* Footer info — always visible */}
-      <div className="flex flex-1 flex-col gap-1 p-4">
-        <h3 className="font-serif text-lg text-charcoal">{project.name}</h3>
-        <div className="flex flex-wrap items-center gap-2 text-[11px] text-warm-gray">
-          {meta?.label && (
-            <span className="inline-flex items-center gap-1">
-              <CategoryIcon className={`h-3 w-3 ${meta.accent}`} />
-              {meta.label}
-            </span>
-          )}
-          <span>·</span>
-          <span>Updated {formatDate(project.updated_at)}</span>
-        </div>
+      {/* Hover overlay — fades in with all the info */}
+      <div
+        className={`pointer-events-none absolute inset-0 flex flex-col justify-end bg-gradient-to-t from-charcoal/95 via-charcoal/60 to-charcoal/10 p-4 transition-opacity duration-200 ${
+          hasImage ? "opacity-0 group-hover:opacity-100" : "opacity-0 group-hover:opacity-100"
+        }`}
+      >
+        <h3 className="font-serif text-xl text-white drop-shadow-sm leading-tight">
+          {project.name}
+        </h3>
         {project.description && (
-          <p className="mt-1 line-clamp-2 text-xs text-warm-gray">
+          <p className="mt-1 line-clamp-3 text-xs text-white/85">
             {project.description}
           </p>
         )}
-
-        {/* Mini stats row */}
-        <div className="mt-auto flex flex-wrap items-center gap-x-3 gap-y-1 pt-3 text-[11px] text-warm-gray">
+        <div className="mt-2 flex flex-wrap items-center gap-2 text-[11px] text-white/90">
+          {meta?.label && (
+            <span className="inline-flex items-center gap-1 rounded-full bg-white/20 px-2 py-0.5 font-medium backdrop-blur-sm">
+              <CategoryIcon className="h-3 w-3" />
+              {meta.label}
+            </span>
+          )}
           <span className="inline-flex items-center gap-1">
             <FiClipboard className="h-3 w-3" />
-            {project.stageCount}
+            {project.stageCount} stage{project.stageCount === 1 ? "" : "s"}
           </span>
           <span className="inline-flex items-center gap-1">
             <FiTool className="h-3 w-3" />
             {project.completedStepCount}/{project.stepCount}
           </span>
           {project.subProjectCount > 0 && (
-            <span className="inline-flex items-center gap-1 text-terracotta-dark">
+            <span className="inline-flex items-center gap-1 text-terracotta">
               <FiPackage className="h-3 w-3" />
-              {project.subProjectCount} sub-project
-              {project.subProjectCount === 1 ? "" : "s"}
-            </span>
-          )}
-          {project.stepCount > 0 && (
-            <span className="ml-auto inline-flex items-center gap-1 font-medium text-charcoal">
-              <FiDollarSign className="h-3 w-3 opacity-0" />
-              {progressPct}%
+              {project.subProjectCount} sub
             </span>
           )}
         </div>
-
-        {/* Progress bar */}
+        <div className="mt-2 flex items-center gap-2 text-[10px] text-white/80">
+          <span>Updated {formatDate(project.updated_at)}</span>
+          {project.stepCount > 0 && (
+            <>
+              <span>·</span>
+              <span className="font-semibold text-white">{progressPct}%</span>
+            </>
+          )}
+        </div>
         {project.stepCount > 0 && (
-          <div className="mt-1 h-1 w-full overflow-hidden rounded-full bg-cream">
+          <div className="mt-1.5 h-1 w-full overflow-hidden rounded-full bg-white/20">
             <div
-              className="h-full rounded-full bg-sage transition-all duration-300"
+              className="h-full rounded-full bg-sage"
               style={{ width: `${progressPct}%` }}
             />
           </div>

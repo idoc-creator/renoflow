@@ -2,7 +2,8 @@ import { createClient } from "@/lib/supabase/server";
 import Link from "next/link";
 import { FiPlus, FiFolder, FiAlertCircle } from "react-icons/fi";
 import { NewProjectButton } from "@/components/NewProjectButton";
-import { ProjectCard, type ProjectCardData } from "@/components/bunker/ProjectCard";
+import { type ProjectCardData } from "@/components/bunker/ProjectCard";
+import { ProjectGrid } from "@/components/bunker/ProjectGrid";
 
 export default async function BunkerPage() {
   const supabase = await createClient();
@@ -132,11 +133,7 @@ export default async function BunkerPage() {
 
       {/* Projects grid or empty state */}
       {cards.length > 0 ? (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {cards.map((project) => (
-            <ProjectCard key={project.id} project={project} />
-          ))}
-        </div>
+        <ProjectGrid cards={cards} />
       ) : (
         <div className="flex flex-col items-center justify-center rounded-xl border-2 border-dashed border-border-warm bg-white py-16">
           <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-cream">
