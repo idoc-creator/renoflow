@@ -4,6 +4,13 @@ import { useState } from "react";
 import { CheckCircle, PaperPlaneTilt } from "@phosphor-icons/react/dist/ssr";
 import { createClient } from "@/lib/supabase/client";
 
+export type RoleInterest =
+  | "diyer"
+  | "builder"
+  | "expert"
+  | "ambassador"
+  | "contractor";
+
 interface BetaSignupFormProps {
   /** Analytics source — e.g. "landing-hero", "pricing-footer". */
   source: string;
@@ -13,6 +20,8 @@ interface BetaSignupFormProps {
   cta?: string;
   /** Tone: "light" (for dark bg) or "dark" (for light bg). */
   tone?: "light" | "dark";
+  /** Persona interest — segments the waitlist by role. */
+  roleInterest?: RoleInterest;
 }
 
 export function BetaSignupForm({
@@ -20,6 +29,7 @@ export function BetaSignupForm({
   caption,
   cta = "Join the waitlist",
   tone = "dark",
+  roleInterest,
 }: BetaSignupFormProps) {
   const [email, setEmail] = useState("");
   const [name, setName] = useState("");
@@ -41,6 +51,7 @@ export function BetaSignupForm({
       email: trimmed,
       name: name.trim() || null,
       source,
+      role_interest: roleInterest ?? null,
       referrer:
         typeof window !== "undefined" ? document.referrer || null : null,
     });

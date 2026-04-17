@@ -8,6 +8,9 @@ export function MarketingTopNav({ isAuthed }: { isAuthed: boolean }) {
           Bench
         </Link>
         <nav className="hidden md:flex items-center gap-6 text-sm font-semibold text-graphite">
+          <Link href="/who-its-for" className="hover:text-ink transition-colors">
+            Who it&apos;s for
+          </Link>
           <Link href="/pricing" className="hover:text-ink transition-colors">
             Pricing
           </Link>

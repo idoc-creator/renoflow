@@ -21,6 +21,7 @@ export function SiteFooter() {
 
         <FooterCol title="Product">
           <FooterLink href="/">Home</FooterLink>
+          <FooterLink href="/who-its-for">Who it&apos;s for</FooterLink>
           <FooterLink href="/pricing">Pricing</FooterLink>
           <FooterLink href="/join-beta">Join the beta</FooterLink>
         </FooterCol>
