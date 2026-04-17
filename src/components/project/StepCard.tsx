@@ -9,7 +9,10 @@ import {
   FiArrowUp,
   FiArrowDown,
 } from "react-icons/fi";
-import StepEditForm, { type StepFormData } from "./StepEditForm";
+import StepEditForm, {
+  type StepFormData,
+  type DependencyOption,
+} from "./StepEditForm";
 import SubTaskList, { type SubTask } from "./SubTaskList";
 import ConfirmDelete from "./ConfirmDelete";
 import type { StepTool } from "./ToolPicker";
@@ -34,6 +37,9 @@ export interface StepData {
   tips: string | null;
   is_completed: boolean;
   sort_order: number;
+  depends_on_step_id?: string | null;
+  /** Derived at read-time for display of the "blocked by" badge. */
+  blocked_by?: { title: string; is_completed: boolean } | null;
 }
 
 interface StepCardProps {
@@ -43,6 +49,7 @@ interface StepCardProps {
   isNext: boolean;
   projectId?: string;
   stageTitle?: string;
+  dependencyOptions?: DependencyOption[];
   onToggle: (stepId: string, completed: boolean) => void;
   onEdit: (stepId: string, data: StepFormData) => Promise<void>;
   onDelete: (stepId: string) => Promise<void>;
@@ -57,6 +64,7 @@ export function StepCard({
   isNext,
   projectId,
   stageTitle,
+  dependencyOptions,
   onToggle,
   onEdit,
   onDelete,
@@ -116,6 +124,7 @@ export function StepCard({
         initial={step}
         projectId={projectId}
         stageTitle={stageTitle}
+        dependencyOptions={dependencyOptions}
         onSave={async (data) => {
           await onEdit(step.id, data);
           setEditing(false);
@@ -220,6 +229,12 @@ export function StepCard({
             <p className="mt-0.5 text-xs text-warm-gray">
               {step.description}
             </p>
+          )}
+
+          {step.blocked_by && !step.blocked_by.is_completed && !visuallyDone && (
+            <div className="mt-1.5 inline-flex items-center gap-1 rounded-full bg-amber-50 border border-amber-200 px-2 py-0.5 text-[10px] font-medium text-amber-800">
+              🔒 Blocked by: {step.blocked_by.title}
+            </div>
           )}
 
           <div className="mt-2 flex flex-wrap gap-2">

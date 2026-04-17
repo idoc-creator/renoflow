@@ -7,6 +7,8 @@ import {
   FiTool,
   FiPackage,
   FiShoppingCart,
+  FiFlag,
+  FiAlertTriangle,
 } from "react-icons/fi";
 
 interface ProjectOverviewProps {
@@ -28,6 +30,10 @@ interface ProjectOverviewProps {
   subProjectCount?: number;
   tools?: { name: string; need_to_buy: boolean }[];
   materials?: string[];
+  openMilestoneCount?: number;
+  overdueMilestoneCount?: number;
+  nextMilestone?: { title: string; kind: string; due_date: string | null } | null;
+  orderSoon?: { id: string; name: string; order_by_date: string | null }[];
 }
 
 export default function ProjectOverview({
@@ -38,6 +44,10 @@ export default function ProjectOverview({
   subProjectCount = 0,
   tools = [],
   materials = [],
+  openMilestoneCount = 0,
+  overdueMilestoneCount = 0,
+  nextMilestone = null,
+  orderSoon = [],
 }: ProjectOverviewProps) {
   const toolsToBuy = tools.filter((t) => t.need_to_buy).length;
   const savings =
@@ -113,6 +123,84 @@ export default function ProjectOverview({
           accent
         />
       </div>
+
+      {/* Milestones strip */}
+      {openMilestoneCount > 0 && (
+        <Link
+          href={`/bunker/project/${project.id}/plan`}
+          className={`flex items-center gap-3 rounded-2xl border p-4 transition-colors ${
+            overdueMilestoneCount > 0
+              ? "bg-red-50 border-red-200 hover:border-red-300"
+              : "bg-white border-border-warm hover:border-terracotta"
+          }`}
+        >
+          <span
+            className={`inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full ${
+              overdueMilestoneCount > 0
+                ? "bg-red-100 text-red-700"
+                : "bg-terracotta/10 text-terracotta-dark"
+            }`}
+          >
+            {overdueMilestoneCount > 0 ? (
+              <FiAlertTriangle className="h-5 w-5" />
+            ) : (
+              <FiFlag className="h-5 w-5" />
+            )}
+          </span>
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-semibold text-charcoal">
+              {overdueMilestoneCount > 0
+                ? `${overdueMilestoneCount} overdue milestone${overdueMilestoneCount === 1 ? "" : "s"}`
+                : `${openMilestoneCount} open milestone${openMilestoneCount === 1 ? "" : "s"}`}
+            </p>
+            {nextMilestone && (
+              <p className="text-xs text-warm-gray truncate">
+                Next up: {nextMilestone.title}
+                {nextMilestone.due_date ? ` · ${nextMilestone.due_date}` : ""}
+              </p>
+            )}
+          </div>
+          <span className="text-xs text-terracotta font-medium">View →</span>
+        </Link>
+      )}
+
+      {/* Order this week / overdue orders */}
+      {orderSoon.length > 0 && (
+        <Link
+          href={`/bunker/project/${project.id}/budget`}
+          className="block rounded-2xl bg-terracotta/5 border border-terracotta/30 p-4 hover:border-terracotta transition-colors"
+        >
+          <div className="flex items-center justify-between gap-3 mb-2">
+            <h3 className="inline-flex items-center gap-2 font-serif text-base text-charcoal">
+              <FiShoppingCart className="h-4 w-4 text-terracotta-dark" />
+              Order soon
+            </h3>
+            <span className="text-[11px] font-medium text-terracotta">
+              {orderSoon.length} item{orderSoon.length === 1 ? "" : "s"}
+            </span>
+          </div>
+          <ul className="space-y-1">
+            {orderSoon.slice(0, 5).map((o) => (
+              <li
+                key={o.id}
+                className="flex items-center justify-between text-xs"
+              >
+                <span className="text-charcoal truncate">{o.name}</span>
+                {o.order_by_date && (
+                  <span className="text-terracotta-dark font-medium shrink-0 ml-2">
+                    by {o.order_by_date}
+                  </span>
+                )}
+              </li>
+            ))}
+            {orderSoon.length > 5 && (
+              <li className="text-[11px] text-warm-gray">
+                +{orderSoon.length - 5} more
+              </li>
+            )}
+          </ul>
+        </Link>
+      )}
 
       {/* Tools + Materials + Sub-projects aggregation */}
       {(tools.length > 0 || materials.length > 0 || subProjectCount > 0) && (

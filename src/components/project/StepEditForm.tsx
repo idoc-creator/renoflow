@@ -15,12 +15,20 @@ export interface StepFormData {
   step_tools: StepTool[];
   sub_tasks: SubTask[];
   tips: string | null;
+  depends_on_step_id: string | null;
+}
+
+export interface DependencyOption {
+  id: string;
+  title: string;
+  stageTitle: string;
 }
 
 interface StepEditFormProps {
   initial?: Partial<StepFormData>;
   projectId?: string;
   stageTitle?: string;
+  dependencyOptions?: DependencyOption[];
   onSave: (data: StepFormData) => void | Promise<void>;
   onCancel: () => void;
   saveLabel?: string;
@@ -42,10 +50,14 @@ export default function StepEditForm({
   initial,
   projectId,
   stageTitle,
+  dependencyOptions = [],
   onSave,
   onCancel,
   saveLabel = "Save",
 }: StepEditFormProps) {
+  const [dependsOnStepId, setDependsOnStepId] = useState<string | null>(
+    initial?.depends_on_step_id ?? null
+  );
   const [title, setTitle] = useState(initial?.title ?? "");
   const [subTasks, setSubTasks] = useState<SubTask[]>(
     initial?.sub_tasks ?? []
@@ -85,6 +97,7 @@ export default function StepEditForm({
       step_tools: stepTools,
       sub_tasks: subTasks,
       tips,
+      depends_on_step_id: dependsOnStepId,
     });
     setSaving(false);
   }
@@ -253,6 +266,27 @@ export default function StepEditForm({
                   Tools
                 </label>
                 <ToolPicker tools={stepTools} onChange={setStepTools} />
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-charcoal mb-1">
+                  Blocked by (optional)
+                </label>
+                <select
+                  value={dependsOnStepId ?? ""}
+                  onChange={(e) => setDependsOnStepId(e.target.value || null)}
+                  className="w-full px-3 py-2 bg-white rounded-md border border-border-warm text-sm focus:outline-none focus:border-terracotta"
+                >
+                  <option value="">— Not blocked —</option>
+                  {dependencyOptions.map((o) => (
+                    <option key={o.id} value={o.id}>
+                      {o.stageTitle} · {o.title}
+                    </option>
+                  ))}
+                </select>
+                <p className="mt-1 text-[11px] text-warm-gray">
+                  Pick a step that must finish before this one can start (e.g.
+                  rough plumbing before tile).
+                </p>
               </div>
             </div>
           )}

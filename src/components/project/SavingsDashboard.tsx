@@ -6,6 +6,8 @@ interface SavingsDashboardProps {
   budgetTotal: number;
   budgetSpent: number;
   actualCostTotal: number;
+  /** Percentage buffer for surprises (default 15). */
+  contingencyPct?: number;
 }
 
 export function SavingsDashboard({
@@ -14,8 +16,11 @@ export function SavingsDashboard({
   budgetTotal,
   budgetSpent,
   actualCostTotal,
+  contingencyPct = 15,
 }: SavingsDashboardProps) {
-  const savedByDiy = contractorEstimate - diyEstimate;
+  const contingencyAmount = Math.round(diyEstimate * (contingencyPct / 100));
+  const diyWithContingency = diyEstimate + contingencyAmount;
+  const savedByDiy = contractorEstimate - diyWithContingency;
   const spent = actualCostTotal;
   const budgetRemaining = budgetTotal - budgetSpent;
   const earned = 0; // placeholder
@@ -23,9 +28,20 @@ export function SavingsDashboard({
 
   return (
     <div className="space-y-4">
-      <h2 className="text-sm font-semibold uppercase tracking-wide text-warm-gray">
-        Savings Dashboard
-      </h2>
+      <div className="flex items-baseline justify-between gap-3 flex-wrap">
+        <h2 className="text-sm font-semibold uppercase tracking-wide text-warm-gray">
+          Savings Dashboard
+        </h2>
+        {diyEstimate > 0 && (
+          <p className="text-[11px] text-warm-gray">
+            Includes {contingencyPct}% contingency (
+            <span className="font-semibold text-charcoal">
+              ${contingencyAmount.toLocaleString()}
+            </span>
+            )
+          </p>
+        )}
+      </div>
 
       <div className="grid grid-cols-2 gap-3">
         {/* Saved by DIYing */}

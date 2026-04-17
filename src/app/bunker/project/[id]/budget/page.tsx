@@ -14,7 +14,7 @@ export default async function BudgetPage({
   const { data: project, error } = await supabase
     .from("projects")
     .select(
-      "id, budget_total, budget_spent, contractor_estimate, diy_estimate"
+      "id, budget_total, budget_spent, contractor_estimate, diy_estimate, contingency_pct"
     )
     .eq("id", id)
     .single();
@@ -51,6 +51,7 @@ export default async function BudgetPage({
           budgetTotal={Number(project.budget_total) || 0}
           budgetSpent={Number(project.budget_spent) || 0}
           actualCostTotal={actualCostTotal}
+          contingencyPct={Number(project.contingency_pct) || 15}
         />
       </section>
 

@@ -13,7 +13,7 @@ export default async function ProjectSettingsPage({
   const { data: project, error } = await supabase
     .from("projects")
     .select(
-      "id, name, description, category, status, budget_total, contractor_estimate, diy_estimate"
+      "id, name, description, category, status, budget_total, contractor_estimate, diy_estimate, contingency_pct"
     )
     .eq("id", id)
     .single();

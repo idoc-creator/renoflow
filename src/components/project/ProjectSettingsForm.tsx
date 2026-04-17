@@ -13,6 +13,7 @@ interface Project {
   budget_total: number | null;
   contractor_estimate: number | null;
   diy_estimate: number | null;
+  contingency_pct: number | null;
 }
 
 export function ProjectSettingsForm({ project }: { project: Project }) {
@@ -29,6 +30,9 @@ export function ProjectSettingsForm({ project }: { project: Project }) {
   );
   const [diyEstimate, setDiyEstimate] = useState(
     project.diy_estimate?.toString() ?? ""
+  );
+  const [contingencyPct, setContingencyPct] = useState(
+    (project.contingency_pct ?? 15).toString()
   );
   const [saving, setSaving] = useState(false);
   const [savedAt, setSavedAt] = useState<number | null>(null);
@@ -53,6 +57,7 @@ export function ProjectSettingsForm({ project }: { project: Project }) {
           ? parseFloat(contractorEstimate)
           : null,
         diy_estimate: diyEstimate ? parseFloat(diyEstimate) : null,
+        contingency_pct: contingencyPct ? parseFloat(contingencyPct) : 15,
       })
       .eq("id", project.id);
 
@@ -176,6 +181,23 @@ export function ProjectSettingsForm({ project }: { project: Project }) {
               className={inputClass}
             />
           </Field>
+        </div>
+        <div>
+          <Field label="Contingency buffer (%)">
+            <input
+              type="number"
+              min="0"
+              max="100"
+              step="1"
+              value={contingencyPct}
+              onChange={(e) => setContingencyPct(e.target.value)}
+              className={inputClass}
+            />
+          </Field>
+          <p className="mt-1 text-[11px] text-warm-gray">
+            Pros use 15% on most jobs, 25%+ on demo or pre-1980 homes. This pads
+            your DIY estimate so surprises don&apos;t feel like failure.
+          </p>
         </div>
       </div>
 

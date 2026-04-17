@@ -1,6 +1,10 @@
 import { createClient } from "@/lib/supabase/server";
 import { notFound } from "next/navigation";
 import { StageList, type StageData } from "@/components/project/StageList";
+import {
+  MilestonesList,
+  type Milestone,
+} from "@/components/project/MilestonesList";
 
 export default async function ProjectPlanPage({
   params,
@@ -61,6 +65,15 @@ export default async function ProjectPlanPage({
     })
   );
 
+  // Milestones
+  const { data: milestonesRaw } = await supabase
+    .from("project_milestones")
+    .select("*")
+    .eq("project_id", id)
+    .order("sort_order", { ascending: true });
+
+  const stageOptions = sortedStages.map((s) => ({ id: s.id, title: s.title }));
+
   return (
     <>
       {/* Summary */}
@@ -69,6 +82,14 @@ export default async function ProjectPlanPage({
           <p className="text-charcoal leading-relaxed">{project.summary}</p>
         </div>
       )}
+
+      <div className="mb-6">
+        <MilestonesList
+          projectId={id}
+          initial={(milestonesRaw ?? []) as Milestone[]}
+          stages={stageOptions}
+        />
+      </div>
 
       <StageList stages={sortedStages} projectId={id} />
     </>

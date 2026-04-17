@@ -62,6 +62,41 @@ export default async function ProjectOverviewPage({
     (s) => s.linked_project_id
   ).length;
 
+  // Upcoming "order by" items (not yet purchased, date within 14 days or past)
+  const { data: upcomingOrders } = await supabase
+    .from("shopping_list_items")
+    .select("id, name, order_by_date, is_purchased")
+    .eq("project_id", id)
+    .eq("is_purchased", false)
+    .not("order_by_date", "is", null)
+    .order("order_by_date", { ascending: true })
+    .limit(10);
+  const todayMs = Date.now();
+  const horizonMs = todayMs + 14 * 86_400_000;
+  const orderSoon = (upcomingOrders ?? []).filter((item) => {
+    if (!item.order_by_date) return false;
+    const t = new Date(item.order_by_date + "T00:00:00").getTime();
+    return t <= horizonMs;
+  });
+
+  // Milestones summary (open = not complete)
+  const { data: milestones } = await supabase
+    .from("project_milestones")
+    .select("id, title, kind, status, due_date")
+    .eq("project_id", id);
+  const openMilestones = (milestones ?? []).filter(
+    (m) => m.status !== "complete"
+  );
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const nextMilestone = openMilestones
+    .filter((m) => m.due_date)
+    .sort((a, b) => (a.due_date || "").localeCompare(b.due_date || ""))[0];
+  const overdueMilestoneCount = openMilestones.filter((m) => {
+    if (!m.due_date) return false;
+    return new Date(m.due_date + "T00:00:00") < today;
+  }).length;
+
   // Dedupe tools by lowercased name; keep the "nicer" label (first seen)
   // and mark need_to_buy if any occurrence says so.
   const toolMap = new Map<string, { name: string; need_to_buy: boolean }>();
@@ -119,6 +154,22 @@ export default async function ProjectOverviewPage({
       subProjectCount={subProjectCount}
       tools={tools}
       materials={materials}
+      openMilestoneCount={openMilestones.length}
+      overdueMilestoneCount={overdueMilestoneCount}
+      nextMilestone={
+        nextMilestone
+          ? {
+              title: nextMilestone.title,
+              kind: nextMilestone.kind as string,
+              due_date: nextMilestone.due_date,
+            }
+          : null
+      }
+      orderSoon={orderSoon.map((o) => ({
+        id: o.id,
+        name: o.name,
+        order_by_date: o.order_by_date,
+      }))}
     />
   );
 }

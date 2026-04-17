@@ -2,18 +2,23 @@
 
 import { useState } from "react";
 import { FiPlus } from "react-icons/fi";
-import StepEditForm, { type StepFormData } from "./StepEditForm";
+import StepEditForm, {
+  type StepFormData,
+  type DependencyOption,
+} from "./StepEditForm";
 
 interface AddStepButtonProps {
   onCreate: (data: StepFormData) => void | Promise<void>;
   stageTitle?: string;
   projectId?: string;
+  dependencyOptions?: DependencyOption[];
 }
 
 export default function AddStepButton({
   onCreate,
   stageTitle,
   projectId,
+  dependencyOptions,
 }: AddStepButtonProps) {
   const [open, setOpen] = useState(false);
 
@@ -22,6 +27,7 @@ export default function AddStepButton({
       <StepEditForm
         stageTitle={stageTitle}
         projectId={projectId}
+        dependencyOptions={dependencyOptions}
         onSave={async (data) => {
           await onCreate(data);
           setOpen(false);

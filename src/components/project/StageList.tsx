@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import {
@@ -19,7 +19,7 @@ import AddStageButton from "./AddStageButton";
 import StageEditForm, { type StageFormData } from "./StageEditForm";
 import ConfirmDelete from "./ConfirmDelete";
 import AddStepButton from "./AddStepButton";
-import type { StepFormData } from "./StepEditForm";
+import type { StepFormData, DependencyOption } from "./StepEditForm";
 import type { SubTask } from "./SubTaskList";
 
 const statusColors: Record<string, string> = {
@@ -250,6 +250,7 @@ export function StageList({
         materials_needed: [],
         sub_tasks: data.sub_tasks,
         tips: data.tips,
+        depends_on_step_id: data.depends_on_step_id,
         sort_order: maxSort + 1,
         is_completed: allSubDone,
       })
@@ -288,6 +289,7 @@ export function StageList({
         step_tools: data.step_tools,
         sub_tasks: data.sub_tasks,
         tips: data.tips,
+        depends_on_step_id: data.depends_on_step_id,
         is_completed:
           data.sub_tasks.length > 0 ? allSubDone : undefined,
       })
@@ -314,6 +316,7 @@ export function StageList({
                 step_tools: data.step_tools,
                 sub_tasks: data.sub_tasks,
                 tips: data.tips,
+                depends_on_step_id: data.depends_on_step_id,
                 is_completed:
                   data.sub_tasks.length > 0
                     ? allSubDone
@@ -446,6 +449,27 @@ export function StageList({
       router.refresh();
     }
   }
+
+  // Flat list of all steps with their stage title — used for the "blocked by"
+  // dropdown and to resolve the blocked-by badge label.
+  const dependencyOptions: DependencyOption[] = useMemo(
+    () =>
+      stages.flatMap((stage) =>
+        stage.steps.map((step) => ({
+          id: step.id,
+          title: step.title,
+          stageTitle: stage.title,
+        }))
+      ),
+    [stages]
+  );
+  const stepById = useMemo(() => {
+    const map = new Map<string, StepData>();
+    for (const stage of stages) {
+      for (const step of stage.steps) map.set(step.id, step);
+    }
+    return map;
+  }, [stages]);
 
   // Empty state
   if (stages.length === 0) {
@@ -616,12 +640,30 @@ export function StageList({
                       {stage.steps.map((step, sIdx) => (
                         <StepCard
                           key={step.id}
-                          step={step}
+                          step={{
+                            ...step,
+                            blocked_by: step.depends_on_step_id
+                              ? (() => {
+                                  const dep = stepById.get(
+                                    step.depends_on_step_id
+                                  );
+                                  return dep
+                                    ? {
+                                        title: dep.title,
+                                        is_completed: dep.is_completed,
+                                      }
+                                    : null;
+                                })()
+                              : null,
+                          }}
                           index={sIdx}
                           total={stage.steps.length}
                           isNext={step.id === nextStepId}
                           projectId={projectId}
                           stageTitle={stage.title}
+                          dependencyOptions={dependencyOptions.filter(
+                            (o) => o.id !== step.id
+                          )}
                           onToggle={handleStepToggle}
                           onEdit={handleUpdateStep}
                           onDelete={handleDeleteStep}
@@ -633,6 +675,7 @@ export function StageList({
                         onCreate={(data) => handleCreateStep(stage.id, data)}
                         projectId={projectId}
                         stageTitle={stage.title}
+                        dependencyOptions={dependencyOptions}
                       />
                     </div>
                   </div>

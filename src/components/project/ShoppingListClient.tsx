@@ -21,12 +21,19 @@ interface ShoppingItem {
   actual_price: number | null;
   is_purchased: boolean;
   created_at: string;
+  lead_time_days: number | null;
+  order_by_date: string | null;
 }
 
 interface ShoppingListClientProps {
   projectId: string;
   stages: Stage[];
   initialItems: ShoppingItem[];
+}
+
+function formatShortDate(iso: string): string {
+  const d = new Date(iso + "T00:00:00");
+  return d.toLocaleDateString(undefined, { month: "short", day: "numeric" });
 }
 
 export function ShoppingListClient({
@@ -44,6 +51,8 @@ export function ShoppingListClient({
   const [newUnit, setNewUnit] = useState("");
   const [newEstPrice, setNewEstPrice] = useState("");
   const [newStageId, setNewStageId] = useState("");
+  const [newLeadDays, setNewLeadDays] = useState("");
+  const [newOrderBy, setNewOrderBy] = useState("");
 
   // Group items by stage, with unpurchased first
   const grouped = useMemo(() => {
@@ -140,6 +149,8 @@ export function ShoppingListClient({
         quantity: newQty ? parseFloat(newQty) : 1,
         unit: newUnit || null,
         estimated_price: newEstPrice ? parseFloat(newEstPrice) : null,
+        lead_time_days: newLeadDays ? parseInt(newLeadDays, 10) : null,
+        order_by_date: newOrderBy || null,
       })
       .select("*")
       .single();
@@ -151,6 +162,8 @@ export function ShoppingListClient({
       setNewUnit("");
       setNewEstPrice("");
       setNewStageId("");
+      setNewLeadDays("");
+      setNewOrderBy("");
       setShowAddForm(false);
     }
   }
@@ -253,6 +266,16 @@ export function ShoppingListClient({
                       {(item.quantity || item.unit) && (
                         <p className="text-xs text-warm-gray">
                           {item.quantity || ""} {item.unit || ""}
+                        </p>
+                      )}
+                      {(item.order_by_date || item.lead_time_days) && (
+                        <p className="mt-0.5 text-[11px] text-terracotta-dark">
+                          {item.order_by_date && (
+                            <>Order by {formatShortDate(item.order_by_date)}</>
+                          )}
+                          {!item.order_by_date && item.lead_time_days && (
+                            <>~{item.lead_time_days}d lead</>
+                          )}
                         </p>
                       )}
                     </div>
@@ -406,6 +429,27 @@ export function ShoppingListClient({
                   </option>
                 ))}
               </select>
+              <div className="flex gap-2">
+                <input
+                  type="number"
+                  min="0"
+                  value={newLeadDays}
+                  onChange={(e) => setNewLeadDays(e.target.value)}
+                  placeholder="Lead time (days)"
+                  className="w-32 rounded-lg border border-border-warm px-3 py-2 text-sm focus:border-teal-500 focus:ring-1 focus:ring-teal-500 focus:outline-none"
+                />
+                <input
+                  type="date"
+                  value={newOrderBy}
+                  onChange={(e) => setNewOrderBy(e.target.value)}
+                  placeholder="Order by"
+                  className="flex-1 rounded-lg border border-border-warm px-3 py-2 text-sm focus:border-teal-500 focus:ring-1 focus:ring-teal-500 focus:outline-none"
+                />
+              </div>
+              <p className="text-[11px] text-warm-gray">
+                Tile, vanities & custom glass typically run 2–12 weeks. Setting
+                an &ldquo;order by&rdquo; date surfaces it on your Overview.
+              </p>
               <div className="flex gap-2 pt-1">
                 <button
                   type="button"
