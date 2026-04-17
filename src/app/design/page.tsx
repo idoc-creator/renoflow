@@ -85,8 +85,8 @@ export default function DesignPage() {
       {/* Iconic + accents */}
       <Section title="Iconic + warm earth accents">
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-          <Swatch name="walnut" hex="#4a3528" cls="bg-walnut text-white" iconic />
-          <Swatch name="walnut-dark" hex="#2e1f15" cls="bg-walnut-dark text-white" />
+          <Swatch name="walnut" hex="#4a2b17" cls="bg-walnut text-white" iconic />
+          <Swatch name="walnut-dark" hex="#2a1608" cls="bg-walnut-dark text-white" />
           <Swatch name="brass" hex="#b5874e" cls="bg-brass text-white" />
           <Swatch name="honey" hex="#c9935b" cls="bg-honey text-white" />
           <Swatch name="moss" hex="#6b7d4a" cls="bg-moss text-white" />

@@ -24,12 +24,12 @@
   --color-hairline: #e8e0d1;
   --color-border-warm: #e8e0d1;      /* alias */
 
-  /* Iconic — dark walnut brown */
-  --color-walnut: #4a3528;
-  --color-walnut-dark: #2e1f15;
-  --color-terracotta: #4a3528;       /* alias — primary CTAs → walnut */
-  --color-terracotta-dark: #2e1f15;  /* alias */
-  --color-warm-brown: #4a3528;       /* alias */
+  /* Iconic — rich walnut brown (deep espresso, warm + saturated) */
+  --color-walnut: #4a2b17;
+  --color-walnut-dark: #2a1608;
+  --color-terracotta: #4a2b17;       /* alias — primary CTAs → walnut */
+  --color-terracotta-dark: #2a1608;  /* alias */
+  --color-warm-brown: #4a2b17;       /* alias */
 
   /* Supporting warm earth accents */
   --color-brass: #b5874e;
@@ -43,13 +43,14 @@
   --color-oxblood: #7a2e2e;
 }
 
-/* Paper grid utility — notebook texture for empty states + text-heavy heroes.
-   Use sparingly. Never on image grids. */
+/* Paper grid utility — very muted notebook texture. Used as the default
+   Bunker background (white + whisper gridlines). Safe everywhere since
+   the opacity is low enough to sit behind images and text. */
 .bg-grid {
   background-image:
-    linear-gradient(to right, rgba(26, 17, 10, 0.04) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(26, 17, 10, 0.04) 1px, transparent 1px);
-  background-size: 24px 24px;
+    linear-gradient(to right, rgba(26, 17, 10, 0.035) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(26, 17, 10, 0.035) 1px, transparent 1px);
+  background-size: 28px 28px;
 }
 
 body {

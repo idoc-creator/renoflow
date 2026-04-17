@@ -29,7 +29,7 @@ export function BunkerShell({
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   return (
-    <div className="flex h-screen bg-cream">
+    <div className="flex h-screen bg-paper">
       {/* Sidebar — desktop */}
       <aside className="hidden w-64 flex-col border-r border-border-warm bg-white md:flex">
         <div className="flex h-16 items-center border-b border-slate-100 px-6">
@@ -131,7 +131,9 @@ export function BunkerShell({
         </header>
 
         {/* Page content */}
-        <main className="flex-1 overflow-y-auto p-4 md:p-6">{children}</main>
+        <main className="flex-1 overflow-y-auto bg-paper bg-grid p-4 md:p-6">
+          {children}
+        </main>
 
         {/* Mobile bottom navigation */}
         <nav className="flex border-t border-border-warm bg-white md:hidden">

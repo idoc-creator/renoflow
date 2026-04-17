@@ -38,8 +38,8 @@ All colors live in `globals.css` under `@theme inline`. Changes propagate throug
 
 | Token | Hex | Use |
 |---|---|---|
-| **`--color-walnut`** (alias: `terracotta`, `warm-brown`) | `#4a3528` | **ICONIC.** Primary CTAs, active nav, "Part of" chips, brand moments. Use with intent — scarcity makes it iconic. |
-| `--color-walnut-dark` (alias: `terracotta-dark`) | `#2e1f15` | Walnut hover state. |
+| **`--color-walnut`** (alias: `terracotta`, `warm-brown`) | `#4a2b17` | **ICONIC.** Primary CTAs, active nav, "Part of" chips, brand moments. Use with intent — scarcity makes it iconic. |
+| `--color-walnut-dark` (alias: `terracotta-dark`) | `#2a1608` | Walnut hover state. |
 | `--color-brass` | `#b5874e` | Secondary accent — antique gold. Milestones, "Order soon" badges, featured moments. |
 | `--color-honey` | `#c9935b` | Tertiary — warm tan. Renovation category tints, warm highlights. |
 | `--color-moss` (alias: `sage`) | `#6b7d4a` | Positive semantic — "In progress" pill, progress bars, success confirmations, sub-project count chip. |
@@ -127,19 +127,19 @@ The iconic walnut brown shows up in:
 
 Everything else defaults to ink / graphite / white / ivory. **If everything is walnut, nothing is.** Scarcity is the point.
 
-### Paper grid (optional accent)
-A subtle 24px notebook grid background is available as `.bg-grid` for spots that want workshop feel (intake page hero, empty states).
+### Paper grid (default Bunker background)
+Pure white + a whisper 28px notebook grid. Applied as the default Bunker shell background via `.bg-grid`. Subtle enough (0.035 alpha) to sit behind images, text, and cards without competing.
 
 ```css
 .bg-grid {
   background-image:
-    linear-gradient(to right, rgba(26, 17, 10, 0.04) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(26, 17, 10, 0.04) 1px, transparent 1px);
-  background-size: 24px 24px;
+    linear-gradient(to right, rgba(26, 17, 10, 0.035) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(26, 17, 10, 0.035) 1px, transparent 1px);
+  background-size: 28px 28px;
 }
 ```
 
-Do NOT apply to pages dense with images (it competes). Use for text-heavy pages or empty-state surfaces only.
+Already applied to the Bunker shell main content. Safe to layer images and cards on top — the alpha is low enough that images dominate visually.
 
 ### Image-first cards
 Cards with a cover image: the image IS the card. Chrome collapses to pills on top + hover overlay. No footer strip unless specifically needed.
@@ -158,5 +158,6 @@ Live tokens + components: **`/design`** — renders every swatch, type specimen,
 
 | Date | Change |
 |---|---|
+| 2026-04-18 | Deepened walnut to richer espresso #4a2b17. Bunker bg is now pure white + muted gridline texture by default (was warm cream). |
 | 2026-04-18 | Field Notes palette — walnut iconic, all warm earth tones, pure white background. Retired Pin Red. |
 | 2026-04-17 | Initial editorial palette + Fraunces / Inter Tight typography. |
