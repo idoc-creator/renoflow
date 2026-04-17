@@ -117,7 +117,7 @@ export function ProjectCard({
 
   return (
     <Link
-      href={`/bunker/project/${project.id}`}
+      href={`/projects/project/${project.id}`}
       className="group relative block w-full overflow-hidden rounded-xl shadow-sm transition-all hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-terracotta"
     >
       {hasImage ? (

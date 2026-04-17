@@ -247,7 +247,7 @@ export function IntakeChat({
       // Remove from list
       setDetectedSubs((prev) => prev.filter((s) => s.title !== title));
       // Optionally deep-link
-      router.push(`/bunker/project/${data.id}/intake`);
+      router.push(`/projects/project/${data.id}/intake`);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Couldn't create sub-project.");
     } finally {
@@ -545,7 +545,7 @@ export function IntakeChat({
               )}
             </button>
             <Link
-              href={`/bunker/project/${projectId}`}
+              href={`/projects/project/${projectId}`}
               className="text-sm text-warm-gray hover:text-charcoal px-3 py-2"
             >
               Skip for now

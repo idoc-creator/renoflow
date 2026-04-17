@@ -5,7 +5,7 @@ export default function manifest(): MetadataRoute.Manifest {
     name: "Bench",
     short_name: "Bench",
     description: "Plan your DIY renovation",
-    start_url: "/bunker",
+    start_url: "/projects",
     display: "standalone",
     background_color: "#f8fafc",
     theme_color: "#0d9488",

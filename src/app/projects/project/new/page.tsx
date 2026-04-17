@@ -27,7 +27,7 @@ export default function NewProjectPage() {
       data: { user },
     } = await supabase.auth.getUser();
     if (!user) {
-      router.push("/auth/login?redirect=/bunker/project/new");
+      router.push("/auth/login?redirect=/projects/project/new");
       return;
     }
 
@@ -49,17 +49,17 @@ export default function NewProjectPage() {
       return;
     }
 
-    router.push(`/bunker/project/${data.id}/intake`);
+    router.push(`/projects/project/${data.id}/intake`);
   }
 
   return (
     <div className="min-h-screen py-12 px-4">
       <div className="max-w-2xl mx-auto">
         <Link
-          href="/bunker"
+          href="/projects"
           className="text-warm-gray hover:text-charcoal text-sm"
         >
-          ← Back to Bunker
+          ← Back to Projects
         </Link>
         <h1 className="font-serif text-4xl text-charcoal mt-4 mb-2">
           Start a new project

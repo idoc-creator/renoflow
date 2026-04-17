@@ -163,7 +163,7 @@ export default function PlanReview({
         const j = await res.json().catch(() => ({}));
         throw new Error(j.error || "Couldn't add plan.");
       }
-      router.push(`/bunker/project/${projectId}/plan`);
+      router.push(`/projects/project/${projectId}/plan`);
       router.refresh();
     } catch (e) {
       setError(e instanceof Error ? e.message : "Couldn't add plan.");

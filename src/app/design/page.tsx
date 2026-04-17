@@ -32,10 +32,10 @@ export default function DesignPage() {
         </p>
         <div className="flex items-center gap-3 pt-2">
           <Link
-            href="/bunker"
+            href="/projects"
             className="inline-flex items-center gap-1.5 rounded-lg bg-walnut hover:bg-walnut-dark text-white text-sm font-semibold px-4 py-2 transition-colors"
           >
-            Back to Bunker
+            Back to Projects
           </Link>
           <a
             href="https://github.com/idoc-creator/renoflow/blob/feat/bench-rebuild/docs/design-system.md"

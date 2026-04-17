@@ -24,10 +24,10 @@ export default function TopNav({ isAuthed }: TopNavProps) {
         <div className="ml-auto">
           {isAuthed ? (
             <Link
-              href="/bunker"
+              href="/projects"
               className="bg-terracotta hover:bg-terracotta-dark text-white font-semibold px-5 py-2 rounded-full text-sm transition-colors"
             >
-              Bunker
+              Projects
             </Link>
           ) : (
             <Link

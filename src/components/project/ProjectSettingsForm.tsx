@@ -90,7 +90,7 @@ export function ProjectSettingsForm({ project }: { project: Project }) {
       setDeleting(false);
       return;
     }
-    router.push("/bunker");
+    router.push("/projects");
   }
 
   const inputClass =
@@ -227,7 +227,7 @@ export function ProjectSettingsForm({ project }: { project: Project }) {
           Re-run it any time if your scope changes.
         </p>
         <Link
-          href={`/bunker/project/${project.id}/intake`}
+          href={`/projects/project/${project.id}/intake`}
           className="inline-flex items-center gap-1.5 rounded-lg border border-border-warm bg-white px-3 py-1.5 text-sm font-medium text-charcoal hover:border-terracotta"
         >
           <FiMessageCircle className="h-4 w-4" />

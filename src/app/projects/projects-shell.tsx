@@ -18,12 +18,12 @@ import { useState } from "react";
   wrench + gear felt too technical.
 */
 const navItems = [
-  { href: "/bunker", label: "Projects", icon: House },
-  { href: "/bunker/toolbox", label: "My Toolbox", icon: Toolbox },
-  { href: "/bunker/account", label: "Account", icon: UserCircle },
+  { href: "/projects", label: "Projects", icon: House },
+  { href: "/projects/toolbox", label: "My Toolbox", icon: Toolbox },
+  { href: "/projects/account", label: "Account", icon: UserCircle },
 ];
 
-export function BunkerShell({
+export function ProjectsShell({
   displayName,
   children,
 }: {

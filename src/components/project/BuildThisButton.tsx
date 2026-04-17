@@ -29,7 +29,7 @@ export default function BuildThisButton({
 
     if (res.ok) {
       const { projectId } = await res.json();
-      router.push(`/bunker/project/${projectId}`);
+      router.push(`/projects/project/${projectId}`);
     } else {
       setLoading(false);
       alert("Failed to clone template. Try again.");

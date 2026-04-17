@@ -2,10 +2,10 @@ import { createClient } from "@/lib/supabase/server";
 import Link from "next/link";
 import { FiPlus, FiFolder, FiAlertCircle } from "react-icons/fi";
 import { NewProjectButton } from "@/components/NewProjectButton";
-import { type ProjectCardData } from "@/components/bunker/ProjectCard";
-import { ProjectGrid } from "@/components/bunker/ProjectGrid";
+import { type ProjectCardData } from "@/components/projects/ProjectCard";
+import { ProjectGrid } from "@/components/projects/ProjectGrid";
 
-export default async function BunkerPage() {
+export default async function ProjectsPage() {
   const supabase = await createClient();
   const {
     data: { user },
@@ -25,7 +25,7 @@ export default async function BunkerPage() {
       .order("updated_at", { ascending: false });
 
     if (projectsError) {
-      console.error("Bunker: failed to load projects", projectsError);
+      console.error("Projects: failed to load projects", projectsError);
       errorMsg = projectsError.message;
     }
 
@@ -47,7 +47,7 @@ export default async function BunkerPage() {
         .in("project_id", projectIds);
 
       if (stagesError) {
-        console.error("Bunker: failed to load stages", stagesError);
+        console.error("Projects: failed to load stages", stagesError);
       }
       const stageRows = stages ?? [];
       for (const s of stageRows) {
@@ -63,7 +63,7 @@ export default async function BunkerPage() {
           .select("stage_id, is_completed")
           .in("stage_id", stageIds);
         if (stepsError) {
-          console.error("Bunker: failed to load steps", stepsError);
+          console.error("Projects: failed to load steps", stepsError);
         }
         for (const st of steps ?? []) {
           const list = stepsByStage.get(st.stage_id) ?? [];
@@ -119,9 +119,9 @@ export default async function BunkerPage() {
       <div className="mb-6 flex items-start justify-between gap-4">
         <div>
           <p className="text-caption uppercase tracking-[0.18em] text-walnut">
-            Your Bunker
+            Your Projects
           </p>
-          <h1 className="font-display-lg text-ink mt-1">Projects</h1>
+          <h1 className="font-display-lg text-ink mt-1">All projects</h1>
         </div>
         <NewProjectButton />
       </div>
@@ -151,7 +151,7 @@ export default async function BunkerPage() {
             Start your first renovation plan!
           </p>
           <Link
-            href="/bunker/project/new"
+            href="/projects/project/new"
             className="mt-6 inline-flex items-center gap-2 rounded-lg bg-sage px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-sage-dark"
           >
             <FiPlus className="h-4 w-4" />

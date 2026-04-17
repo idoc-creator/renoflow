@@ -560,7 +560,7 @@ export function StageList({
                       </span>
                       {stage.linked_project_id && (
                         <Link
-                          href={`/bunker/project/${stage.linked_project_id}`}
+                          href={`/projects/project/${stage.linked_project_id}`}
                           onClick={(e) => e.stopPropagation()}
                           className="inline-flex items-center gap-1 rounded-full bg-terracotta/10 px-2 py-0.5 text-[11px] font-medium text-terracotta-dark hover:bg-terracotta/20 transition-colors"
                         >

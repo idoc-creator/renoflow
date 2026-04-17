@@ -89,7 +89,7 @@ export default function ProjectOverview({
             <p className="text-warm-gray italic">
               No description yet.{" "}
               <Link
-                href={`/bunker/project/${project.id}/settings`}
+                href={`/projects/project/${project.id}/settings`}
                 className="text-terracotta hover:underline not-italic font-medium"
               >
                 Add one in settings →
@@ -127,7 +127,7 @@ export default function ProjectOverview({
       {/* Milestones strip */}
       {openMilestoneCount > 0 && (
         <Link
-          href={`/bunker/project/${project.id}/plan`}
+          href={`/projects/project/${project.id}/plan`}
           className={`flex items-center gap-3 rounded-2xl border p-4 transition-colors ${
             overdueMilestoneCount > 0
               ? "bg-red-50 border-red-200 hover:border-red-300"
@@ -167,7 +167,7 @@ export default function ProjectOverview({
       {/* Order this week / overdue orders */}
       {orderSoon.length > 0 && (
         <Link
-          href={`/bunker/project/${project.id}/budget`}
+          href={`/projects/project/${project.id}/budget`}
           className="block rounded-2xl bg-terracotta/5 border border-terracotta/30 p-4 hover:border-terracotta transition-colors"
         >
           <div className="flex items-center justify-between gap-3 mb-2">
@@ -260,7 +260,7 @@ export default function ProjectOverview({
                 </span>
               </h3>
               <Link
-                href={`/bunker/project/${project.id}/budget`}
+                href={`/projects/project/${project.id}/budget`}
                 className="text-[11px] font-medium text-terracotta hover:underline"
               >
                 Shopping list →
@@ -304,22 +304,22 @@ export default function ProjectOverview({
       {/* Quick links to other tabs */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         <TabLink
-          href={`/bunker/project/${project.id}/plan`}
+          href={`/projects/project/${project.id}/plan`}
           label="Plan"
           icon={<FiClipboard className="h-5 w-5" />}
         />
         <TabLink
-          href={`/bunker/project/${project.id}/mood-board`}
+          href={`/projects/project/${project.id}/mood-board`}
           label="Mood Board"
           icon={<FiImage className="h-5 w-5" />}
         />
         <TabLink
-          href={`/bunker/project/${project.id}/budget`}
+          href={`/projects/project/${project.id}/budget`}
           label="Budget"
           icon={<FiDollarSign className="h-5 w-5" />}
         />
         <TabLink
-          href={`/bunker/project/${project.id}/photos`}
+          href={`/projects/project/${project.id}/photos`}
           label="Photos"
           icon={<FiCamera className="h-5 w-5" />}
         />

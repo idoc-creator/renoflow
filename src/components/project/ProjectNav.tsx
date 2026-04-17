@@ -24,7 +24,7 @@ const tabs = [
 
 export function ProjectNav({ projectId }: ProjectNavProps) {
   const pathname = usePathname();
-  const base = `/bunker/project/${projectId}`;
+  const base = `/projects/project/${projectId}`;
 
   function isActive(tab: (typeof tabs)[number]) {
     if (tab.key === "overview") {

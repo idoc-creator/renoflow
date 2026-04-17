@@ -44,7 +44,7 @@
 }
 
 /* Paper grid utility — very muted notebook texture. Used as the default
-   Bunker background (white + whisper gridlines). Safe everywhere since
+   Projects page background (white + whisper gridlines). Safe everywhere since
    the opacity is low enough to sit behind images and text. */
 .bg-grid {
   background-image:

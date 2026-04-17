@@ -1,6 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
-import { PreferencesForm } from "@/components/bunker/PreferencesForm";
+import { PreferencesForm } from "@/components/projects/PreferencesForm";
 
 export default async function AccountPage() {
   const supabase = await createClient();
@@ -8,7 +8,7 @@ export default async function AccountPage() {
     data: { user },
   } = await supabase.auth.getUser();
 
-  if (!user) redirect("/auth/login?redirect=/bunker/account");
+  if (!user) redirect("/auth/login?redirect=/projects/account");
 
   const { data: profile } = await supabase
     .from("profiles")

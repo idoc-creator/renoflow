@@ -37,7 +37,7 @@ export default function EmptyPlanState({
 
       <div className="grid sm:grid-cols-2 gap-4 max-w-xl mx-auto">
         <Link
-          href={`/bunker/project/${projectId}/intake`}
+          href={`/projects/project/${projectId}/intake`}
           className="flex flex-col items-center gap-2 rounded-xl bg-terracotta hover:bg-terracotta-dark text-white p-6 transition-colors"
         >
           <FiMessageCircle className="h-6 w-6" />

@@ -38,10 +38,10 @@ export default function LoginPage() {
         setError(error.message);
         setLoading(false);
       } else {
-        // For dev, auto-confirm is usually on so we can redirect straight to bunker
+        // For dev, auto-confirm is usually on so we can redirect straight to projects
         const { data } = await supabase.auth.getUser();
         if (data.user) {
-          router.push("/bunker");
+          router.push("/projects");
           router.refresh();
         } else {
           setMessage("Account created! Check your email to confirm, then log in.");
@@ -57,7 +57,7 @@ export default function LoginPage() {
         setError(error.message);
         setLoading(false);
       } else {
-        router.push("/bunker");
+        router.push("/projects");
         router.refresh();
       }
     }

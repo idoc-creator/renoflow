@@ -31,7 +31,7 @@ export default async function ProjectLayout({
     <div className="mx-auto max-w-6xl">
       {/* Back link */}
       <Link
-        href="/bunker"
+        href="/projects"
         className="mb-3 inline-flex items-center gap-1.5 text-sm font-medium text-warm-gray transition-colors hover:text-charcoal"
       >
         <FiArrowLeft className="h-4 w-4" />
@@ -45,7 +45,7 @@ export default async function ProjectLayout({
           {statusLabel}
         </span>
         <Link
-          href={`/bunker/project/${id}/settings`}
+          href={`/projects/project/${id}/settings`}
           className="ml-auto inline-flex items-center gap-1.5 rounded-lg border border-border-warm bg-white px-3 py-1.5 text-xs font-medium text-warm-gray transition-colors hover:border-terracotta hover:text-charcoal"
           aria-label="Project settings"
         >
