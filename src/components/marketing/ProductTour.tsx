@@ -4,6 +4,7 @@ import {
   SquaresFour,
   FileText,
 } from "@phosphor-icons/react/dist/ssr";
+import { PeelCard } from "./PeelCard";
 
 /**
  * "A glance at Bench" section — stylized mini-UI mockups showing what the
@@ -28,72 +29,42 @@ export function ProductTour() {
           idea into a plan you can actually execute.
         </p>
 
-        <div className="mt-12 grid gap-6 md:grid-cols-2">
-          <TourCard
+        <p className="mt-3 text-sm font-hand text-walnut">
+          (hover a card — peel the photo to read the note underneath)
+        </p>
+
+        <div className="mt-10 grid gap-6 md:grid-cols-2 md:gap-10">
+          <PeelCard
             Icon={ChatCircleDots}
             eyebrow="Intake"
-            title="A conversation, not a form."
+            title="a conversation, not a form."
             body="Bench interviews you like a contractor friend — branching by category, skipping what doesn't apply. Click a chip or type; recaps as it goes so you know what's locked in."
             mock={<IntakeMock />}
           />
-          <TourCard
+          <PeelCard
             Icon={CheckSquare}
             eyebrow="Plan Review"
-            title="See the whole plan before you commit."
+            title="see the whole plan, first."
             body="The AI drafts stages and steps; you flip off what you don't want, expand any stage, or ask for revisions in plain English. Only accepted stages land in your project."
             mock={<PlanReviewMock />}
           />
-          <TourCard
+          <PeelCard
             Icon={SquaresFour}
             eyebrow="Overview"
-            title="Your project at a glance."
+            title="your project at a glance."
             body="Image-first cards. Stages, progress, budget, sub-projects — all visible without clicking. Status pills tell you what's active, what's paused, what's done."
             mock={<OverviewMock />}
           />
-          <TourCard
+          <PeelCard
             Icon={FileText}
             eyebrow="Milestones + Shopping"
-            title="Permits and long-lead items are first-class."
+            title="permits, first-class."
             body="Plumbing rough-in inspection. A 6-week tile delivery. A vanity you need to order this week. Bench gates your plan against them so nothing closes a wall before it's inspected."
             mock={<MilestonesMock />}
           />
         </div>
       </div>
     </section>
-  );
-}
-
-function TourCard({
-  Icon,
-  eyebrow,
-  title,
-  body,
-  mock,
-}: {
-  Icon: React.ComponentType<{
-    size?: number;
-    weight?: "regular" | "duotone" | "bold" | "fill" | "light" | "thin";
-    className?: string;
-  }>;
-  eyebrow: string;
-  title: string;
-  body: string;
-  mock: React.ReactNode;
-}) {
-  return (
-    <article className="rounded-2xl bg-paper border border-hairline overflow-hidden">
-      <div className="bg-ivory border-b border-hairline p-5 min-h-[200px] flex items-center justify-center">
-        {mock}
-      </div>
-      <div className="p-6">
-        <div className="flex items-center gap-2 text-walnut">
-          <Icon size={16} weight="duotone" />
-          <p className="text-caption uppercase tracking-[0.18em]">{eyebrow}</p>
-        </div>
-        <h3 className="mt-2 font-display text-xl text-ink">{title}</h3>
-        <p className="mt-2 text-graphite leading-relaxed">{body}</p>
-      </div>
-    </article>
   );
 }
 
