@@ -1,47 +1,54 @@
 @import "tailwindcss";
 
 /*
-  Bench design tokens. See docs/design-system.md for the spec.
+  Bench design tokens — "Field Notes" palette.
+  See docs/design-system.md for the spec.
 
-  Rule of thumb: this file is the single source of truth. Never hard-code a
-  color or font in a component — use a token.
+  Source of truth. Never hard-code a color or font in a component — use a
+  token. If you need a color that isn't here, add it here first.
 */
 @theme inline {
   /* Fonts */
   --font-sans: var(--font-inter-tight), var(--font-inter), ui-sans-serif, system-ui, sans-serif;
   --font-serif: var(--font-fraunces), var(--font-instrument-serif), ui-serif, Georgia, serif;
 
-  /* Neutrals — editorial paper + warm ink */
-  --color-paper: #faf7f1;
-  --color-cream: #faf7f1;          /* alias — kept for existing classes */
+  /* Neutrals — pure-white paper + warm walnut ink */
+  --color-paper: #ffffff;
+  --color-ivory: #faf7f0;
+  --color-cream: #faf7f0;            /* alias — existing bg-cream → ivory */
   --color-surface: #ffffff;
-  --color-ink: #141211;
-  --color-charcoal: #141211;        /* alias */
-  --color-graphite: #57544f;
-  --color-warm-gray: #57544f;       /* alias */
-  --color-hairline: #d9d3c7;
-  --color-border-warm: #d9d3c7;     /* alias */
+  --color-ink: #1a110a;
+  --color-charcoal: #1a110a;         /* alias */
+  --color-graphite: #6b5d51;
+  --color-warm-gray: #6b5d51;        /* alias */
+  --color-hairline: #e8e0d1;
+  --color-border-warm: #e8e0d1;      /* alias */
 
-  /* Accents — Pin Red is the iconic color */
-  --color-pin: #c1272d;
-  --color-terracotta: #c1272d;      /* alias */
-  --color-pin-dark: #8e1c22;
-  --color-terracotta-dark: #8e1c22; /* alias */
+  /* Iconic — dark walnut brown */
+  --color-walnut: #4a3528;
+  --color-walnut-dark: #2e1f15;
+  --color-terracotta: #4a3528;       /* alias — primary CTAs → walnut */
+  --color-terracotta-dark: #2e1f15;  /* alias */
+  --color-warm-brown: #4a3528;       /* alias */
 
-  --color-moss: #4a7a5a;
-  --color-sage: #4a7a5a;            /* alias */
-  --color-moss-dark: #375e44;
-  --color-sage-dark: #375e44;       /* alias */
+  /* Supporting warm earth accents */
+  --color-brass: #b5874e;
+  --color-honey: #c9935b;
+  --color-moss: #6b7d4a;
+  --color-moss-dark: #4c5c32;
+  --color-sage: #6b7d4a;             /* alias — bg-sage → moss */
+  --color-sage-dark: #4c5c32;        /* alias */
 
-  --color-rust: #8b6f4e;
-  --color-warm-brown: #8b6f4e;      /* alias */
+  /* Reserved for destructive actions only */
+  --color-oxblood: #7a2e2e;
 }
 
-/* Paper grid utility — notebook texture for empty states + text-heavy hero areas */
+/* Paper grid utility — notebook texture for empty states + text-heavy heroes.
+   Use sparingly. Never on image grids. */
 .bg-grid {
   background-image:
-    linear-gradient(to right, rgba(20, 18, 17, 0.04) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(20, 18, 17, 0.04) 1px, transparent 1px);
+    linear-gradient(to right, rgba(26, 17, 10, 0.04) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(26, 17, 10, 0.04) 1px, transparent 1px);
   background-size: 24px 24px;
 }
 

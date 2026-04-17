@@ -1,4 +1,4 @@
-# Bench Design System
+# Bench Design System — "Field Notes"
 
 **Single source of truth for colors, type, and patterns.** Updates go here first, then into `src/app/globals.css`, then the live reference page at `/design` reflects them automatically.
 
@@ -6,11 +6,14 @@
 
 ## Vibe
 
-> Editorial workshop. Notebook-paper warmth, bold serif headlines, ink-black body text, a single iconic accent that signals "this is Bench" the way Pinterest's red signals Pinterest. Clean enough to manage a renovation; warm enough not to feel like a spreadsheet. **Heavy on images**, quiet on chrome.
+> Field notes from a workshop. Editorial, warm, quietly premium. Bench looks like it belongs next to a leather-bound notebook and a brass tape measure — not an iPad in a coffee shop. **Muted, grounded, lived-in. Nothing loud.** Heavy on images, quiet on chrome.
+
+Inspiration: marble-and-brass bathrooms, vintage Porsche oxblood + pearl, golden retriever warmth, autumn fields, bathroom fixtures in antique gold.
 
 Anti-patterns:
+- Loud saturated reds / primary blues / neon accents
 - Black backgrounds (too heavy for a planner)
-- Pastel-only palettes (too soft to act as a pin/signal)
+- Pastel-only palettes (too soft to act as a brand)
 - Thin 400-weight body text (too hard to read)
 - Busy backgrounds behind image grids
 
@@ -24,30 +27,43 @@ All colors live in `globals.css` under `@theme inline`. Changes propagate throug
 
 | Token | Hex | Use |
 |---|---|---|
-| `--color-paper` (alias: `cream`) | `#faf7f1` | Default page background. Warm white with a whisper of grit. |
-| `--color-surface` | `#ffffff` | Cards and elevated surfaces on top of paper. |
-| `--color-ink` (alias: `charcoal`) | `#141211` | Body text, headlines — near-black with warm undertone. |
-| `--color-graphite` (alias: `warm-gray`) | `#57544f` | Secondary text, metadata, captions. |
-| `--color-hairline` (alias: `border-warm`) | `#d9d3c7` | Borders, dividers — slightly more visible than before for editorial feel. |
+| `--color-paper` | `#ffffff` | Page background. Pure white. |
+| `--color-ivory` (alias: `cream`) | `#faf7f0` | Warm cream — secondary surfaces, hover states on white, section backgrounds. Like Porsche pearl interior. |
+| `--color-surface` | `#ffffff` | Cards and elevated surfaces. |
+| `--color-ink` (alias: `charcoal`) | `#1a110a` | Body text / headlines. Near-black with warm undertone. |
+| `--color-graphite` (alias: `warm-gray`) | `#6b5d51` | Secondary text, metadata, captions. Warm brown-grey. |
+| `--color-hairline` (alias: `border-warm`) | `#e8e0d1` | Borders, dividers. Visible but gentle. |
 
-### Accents
+### Iconic + accents (all warm earth)
 
 | Token | Hex | Use |
 |---|---|---|
-| **`--color-pin`** (alias: `terracotta`) | `#c1272d` | **The iconic color.** Primary action, active nav state, links that matter. Use sparingly — scarcity is what makes it iconic. |
-| `--color-pin-dark` (alias: `terracotta-dark`) | `#8e1c22` | Hover state for pin. |
-| `--color-moss` (alias: `sage`) | `#4a7a5a` | Positive/success states (progress, completed). |
-| `--color-moss-dark` (alias: `sage-dark`) | `#375e44` | Hover state for moss. |
-| `--color-rust` (alias: `warm-brown`) | `#8b6f4e` | Tertiary — warm accent for categories, etc. |
+| **`--color-walnut`** (alias: `terracotta`, `warm-brown`) | `#4a3528` | **ICONIC.** Primary CTAs, active nav, "Part of" chips, brand moments. Use with intent — scarcity makes it iconic. |
+| `--color-walnut-dark` (alias: `terracotta-dark`) | `#2e1f15` | Walnut hover state. |
+| `--color-brass` | `#b5874e` | Secondary accent — antique gold. Milestones, "Order soon" badges, featured moments. |
+| `--color-honey` | `#c9935b` | Tertiary — warm tan. Renovation category tints, warm highlights. |
+| `--color-moss` (alias: `sage`) | `#6b7d4a` | Positive semantic — "In progress" pill, progress bars, success confirmations, sub-project count chip. |
+| `--color-moss-dark` (alias: `sage-dark`) | `#4c5c32` | Moss hover state. |
+| `--color-oxblood` | `#7a2e2e` | Reserved for destructive actions only. Delete buttons, danger zones. Never iconic. |
+
+### Where each color shows up
+
+- **Walnut** (iconic): "New Project" button, intake Send, "Save preferences," active nav chips, "Part of [parent]" pill, filter selected state.
+- **Brass**: milestone kind icons (permits, inspections), "Order soon" Overview badge, featured card accents, optional monogram moments.
+- **Honey**: renovation category gradient fill (with walnut icon/text on top), warm highlights.
+- **Moss**: "In progress" status pill, progress bars, sub-project count chip, success confirmations.
+- **Ivory**: card hover states on white, secondary surfaces on dense pages, form field backgrounds.
+- **Oxblood**: delete buttons, danger zones, destructive "Clear all" actions.
 
 ### Status colors (semantic)
 
 | Status | Color |
 |---|---|
-| Planning | graphite on paper |
+| Planning | graphite on ivory |
 | In progress | white on moss |
-| Complete | white on `#15803d` (green-700) |
-| Paused | white on `#b45309` (amber-700) |
+| Complete | white on `green-700` (#15803d — standard Tailwind, distinct from moss) |
+| Paused | white on `amber-600` (#d97706) |
+| Destructive | white on oxblood |
 
 ---
 
@@ -55,8 +71,8 @@ All colors live in `globals.css` under `@theme inline`. Changes propagate throug
 
 ### Fonts
 
-- **Display — Fraunces** (variable 100-900, SOFT/WONK axes). Editorial contemporary serif. Headlines, project names, feature titles.
-- **Body — Inter Tight** (400-700). Slightly tighter than Inter, stronger weight reads cleaner at small sizes.
+- **Display — Fraunces** (variable serif with SOFT/WONK/opsz axes). Editorial contemporary serif. Headlines, project names, feature titles.
+- **Body — Inter Tight** (400-700). Slightly tighter than Inter; stronger weight reads cleaner at small sizes.
 
 Loaded via `next/font/google` in `layout.tsx`.
 
@@ -73,9 +89,9 @@ Loaded via `next/font/google` in `layout.tsx`.
 | body | 0.9375rem / 1.5 | 500 | Inter Tight |
 | `.text-caption` | 0.75rem / 1.4 | 500 | Inter Tight |
 
-**Letter-spacing:** `-0.02em` on display, `-0.01em` on h1/h2, default elsewhere.
+**Letter-spacing:** `-0.025em` on display, `-0.02em` on h1/h2, default elsewhere.
 
-**Weight defaults:** body copy is 500 (not 400). Strong is 600. Headlines are 600 (not 400 like before).
+**Weight defaults:** body copy is 500 (not 400). Strong is 600. Headlines are 600.
 
 ---
 
@@ -100,25 +116,25 @@ Tailwind defaults. Card padding: `p-4` or `p-5`. Content container: `max-w-6xl`.
 
 ## Patterns
 
-### The Pin Red rule
-The iconic red shows up in:
+### The Walnut rule
+The iconic walnut brown shows up in:
 - Primary CTA buttons
-- Active nav state
+- Active nav states
 - "New project" button
 - Sub-project link chips ("Part of X")
-- Permit / inspection milestone icons
-- Destructive actions — never. Destructive uses a different red (`red-700`).
+- Brand moments (logo, header accents)
+- Destructive actions — never. Destructive uses oxblood.
 
-Everything else defaults to ink / graphite / white. If everything is pin-red, nothing is.
+Everything else defaults to ink / graphite / white / ivory. **If everything is walnut, nothing is.** Scarcity is the point.
 
 ### Paper grid (optional accent)
-A subtle 24px notebook grid background is available as the `.bg-grid` utility for spots that want a workshop feel (intake page hero, empty states).
+A subtle 24px notebook grid background is available as `.bg-grid` for spots that want workshop feel (intake page hero, empty states).
 
 ```css
 .bg-grid {
   background-image:
-    linear-gradient(to right, rgba(20,18,17,0.035) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(20,18,17,0.035) 1px, transparent 1px);
+    linear-gradient(to right, rgba(26, 17, 10, 0.04) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(26, 17, 10, 0.04) 1px, transparent 1px);
   background-size: 24px 24px;
 }
 ```
@@ -142,4 +158,5 @@ Live tokens + components: **`/design`** — renders every swatch, type specimen,
 
 | Date | Change |
 |---|---|
-| 2026-04-17 | Initial editorial palette + Fraunces/Inter Tight typography. Terracotta promoted to Pin Red. |
+| 2026-04-18 | Field Notes palette — walnut iconic, all warm earth tones, pure white background. Retired Pin Red. |
+| 2026-04-17 | Initial editorial palette + Fraunces / Inter Tight typography. |

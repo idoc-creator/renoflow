@@ -41,14 +41,17 @@ const CATEGORY_META: Record<
   renovation: {
     label: "Renovation",
     icon: FiHome,
-    gradient: "from-terracotta/30 via-terracotta/10 to-cream",
-    accent: "text-terracotta-dark",
+    // Honey gradient (warm tan) with walnut icon — keeps renovation warm and
+    // visually distinct from furniture (moss green). Walnut gradient would
+    // be too heavy for a placeholder.
+    gradient: "from-honey/40 via-honey/15 to-ivory",
+    accent: "text-walnut",
   },
   furniture: {
     label: "Furniture",
     icon: FiLayers,
-    gradient: "from-sage/30 via-sage/10 to-cream",
-    accent: "text-sage-dark",
+    gradient: "from-moss/30 via-moss/10 to-ivory",
+    accent: "text-moss-dark",
   },
   craft: {
     label: "Craft",
