@@ -37,7 +37,7 @@ export function BrandMoment({
   }[anchor];
 
   return (
-    <section className="relative w-full overflow-hidden border-y border-hairline">
+    <section className="relative w-full overflow-visible border-y border-hairline">
       <div className={`relative w-full ${aspectClass}`}>
         {imageUrl ? (
           // eslint-disable-next-line @next/next/no-img-element
@@ -49,6 +49,27 @@ export function BrandMoment({
         ) : (
           <PlaceholderFill hint={placeholderHint} />
         )}
+
+        {/* Washi tape at the top corners — "taped to the page" feel.
+            Lives inside the section so it sits on top of the image. */}
+        <span
+          className="washi-tape washi-brass"
+          style={{
+            top: "-10px",
+            left: "8%",
+            width: "96px",
+            transform: "rotate(-6deg)",
+          }}
+        />
+        <span
+          className="washi-tape washi-moss"
+          style={{
+            top: "-10px",
+            right: "10%",
+            width: "84px",
+            transform: "rotate(5deg)",
+          }}
+        />
 
         {/* Quote — walnut handwriting, positioned by anchor */}
         <figure className={`absolute max-w-[85%] md:max-w-xl ${anchorCls}`}>

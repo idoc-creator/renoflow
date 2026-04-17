@@ -13,6 +13,7 @@ import { BetaSignupForm } from "@/components/marketing/BetaSignupForm";
 import { ProductTour } from "@/components/marketing/ProductTour";
 import { StampBadge } from "@/components/marketing/StampBadge";
 import { BrandMoment } from "@/components/marketing/BrandMoment";
+import { Polaroid } from "@/components/marketing/Polaroid";
 
 export const metadata = {
   title: "Bench — Stop pinning. Start building.",
@@ -104,8 +105,45 @@ export default async function LandingPage() {
         </div>
       </section>
 
+      {/* Journal-spread polaroid cluster — deliberately crosses the
+          section boundary below so it reads like a taped-down spread in
+          a bullet journal, not another contained card row. */}
+      <section className="relative">
+        <div className="relative mx-auto max-w-6xl px-6 pt-8 pb-0">
+          <div className="flex flex-wrap items-end justify-center gap-6 md:justify-start md:pl-12 relative z-10">
+            <Polaroid
+              tilt="left"
+              tapeColor="brass"
+              caption="demo day"
+              placeholderHint="before"
+              sizeClass="w-44 md:w-52"
+            />
+            <Polaroid
+              tilt="right"
+              tapeColor="moss"
+              caption="rough-in complete"
+              placeholderHint="mid-progress"
+              sizeClass="w-44 md:w-56"
+              className="md:-mt-6"
+            />
+            <Polaroid
+              tilt="left"
+              tapeColor="honey"
+              caption="finally — tile"
+              placeholderHint="finished"
+              sizeClass="w-44 md:w-48"
+              className="md:-mt-2"
+            />
+          </div>
+          {/* Spacer so the polaroids visually overlap the NEXT section.
+              The polaroids have high z-index; the section below starts
+              just under their mid-point. */}
+          <div className="h-20 md:h-24" />
+        </div>
+      </section>
+
       {/* Who it's for */}
-      <section className="border-t border-hairline bg-ivory">
+      <section className="relative border-t border-hairline bg-ivory -mt-20 md:-mt-24 pt-24 md:pt-32">
         <div className="mx-auto max-w-6xl px-6 py-20">
           <p className="text-caption uppercase tracking-[0.22em] text-walnut">
             Who it&apos;s for
