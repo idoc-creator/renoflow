@@ -1,25 +1,8 @@
 import { createClient } from "@/lib/supabase/server";
 import Link from "next/link";
-import { FiPlus, FiFolder } from "react-icons/fi";
+import { FiPlus, FiFolder, FiAlertCircle } from "react-icons/fi";
 import { NewProjectButton } from "@/components/NewProjectButton";
 import { ProjectCard, type ProjectCardData } from "@/components/bunker/ProjectCard";
-
-interface RawStage {
-  id: string;
-  linked_project_id: string | null;
-  steps: { id: string; is_completed: boolean }[] | null;
-}
-
-interface RawProject {
-  id: string;
-  name: string;
-  updated_at: string;
-  cover_image_url: string | null;
-  category: string | null;
-  status: string;
-  description: string | null;
-  stages: RawStage[] | null;
-}
 
 export default async function BunkerPage() {
   const supabase = await createClient();
@@ -28,44 +11,86 @@ export default async function BunkerPage() {
   } = await supabase.auth.getUser();
 
   let cards: ProjectCardData[] = [];
+  let errorMsg: string | null = null;
 
   if (user) {
-    const { data } = await supabase
+    // Step 1: fetch the projects themselves
+    const { data: projects, error: projectsError } = await supabase
       .from("projects")
       .select(
-        `
-        id, name, updated_at, cover_image_url, category, status, description,
-        stages(id, linked_project_id, steps(id, is_completed))
-        `
+        "id, name, updated_at, cover_image_url, category, status, description"
       )
       .eq("user_id", user.id)
       .order("updated_at", { ascending: false });
 
-    const raw = (data ?? []) as RawProject[];
+    if (projectsError) {
+      console.error("Bunker: failed to load projects", projectsError);
+      errorMsg = projectsError.message;
+    }
 
-    // Build a map of child-id → parent project, so we can stamp
-    // "Part of [parent]" chips on projects that are sub-projects of another.
-    const parentByChildId = new Map<string, { id: string; name: string }>();
-    for (const p of raw) {
-      for (const stage of p.stages ?? []) {
-        if (stage.linked_project_id) {
-          parentByChildId.set(stage.linked_project_id, {
-            id: p.id,
-            name: p.name,
-          });
+    const projectList = projects ?? [];
+    const projectIds = projectList.map((p) => p.id);
+
+    // Step 2: fetch stages for those projects (separate query — if this fails,
+    // we still show the cards with zeroed counts rather than an empty page)
+    let stagesByProject = new Map<
+      string,
+      { id: string; linked_project_id: string | null }[]
+    >();
+    let stepsByStage = new Map<string, { is_completed: boolean }[]>();
+
+    if (projectIds.length > 0) {
+      const { data: stages, error: stagesError } = await supabase
+        .from("stages")
+        .select("id, project_id, linked_project_id")
+        .in("project_id", projectIds);
+
+      if (stagesError) {
+        console.error("Bunker: failed to load stages", stagesError);
+      }
+      const stageRows = stages ?? [];
+      for (const s of stageRows) {
+        const list = stagesByProject.get(s.project_id) ?? [];
+        list.push({ id: s.id, linked_project_id: s.linked_project_id });
+        stagesByProject.set(s.project_id, list);
+      }
+
+      const stageIds = stageRows.map((s) => s.id);
+      if (stageIds.length > 0) {
+        const { data: steps, error: stepsError } = await supabase
+          .from("steps")
+          .select("stage_id, is_completed")
+          .in("stage_id", stageIds);
+        if (stepsError) {
+          console.error("Bunker: failed to load steps", stepsError);
+        }
+        for (const st of steps ?? []) {
+          const list = stepsByStage.get(st.stage_id) ?? [];
+          list.push({ is_completed: st.is_completed });
+          stepsByStage.set(st.stage_id, list);
         }
       }
     }
 
-    cards = raw.map((p) => {
-      const stages = p.stages ?? [];
+    // Build child→parent lookup from any stage that links elsewhere
+    const parentByChildId = new Map<string, { id: string; name: string }>();
+    for (const p of projectList) {
+      for (const s of stagesByProject.get(p.id) ?? []) {
+        if (s.linked_project_id) {
+          parentByChildId.set(s.linked_project_id, { id: p.id, name: p.name });
+        }
+      }
+    }
+
+    cards = projectList.map((p) => {
+      const stages = stagesByProject.get(p.id) ?? [];
       const stageCount = stages.length;
       let stepCount = 0;
       let completedStepCount = 0;
       let subProjectCount = 0;
       for (const s of stages) {
         if (s.linked_project_id) subProjectCount += 1;
-        for (const step of s.steps ?? []) {
+        for (const step of stepsByStage.get(s.id) ?? []) {
           stepCount += 1;
           if (step.is_completed) completedStepCount += 1;
         }
@@ -94,6 +119,16 @@ export default async function BunkerPage() {
         <h1 className="font-serif text-3xl text-charcoal">Your Bunker</h1>
         <NewProjectButton />
       </div>
+
+      {errorMsg && (
+        <div className="mb-4 inline-flex items-start gap-2 rounded-lg bg-red-50 border border-red-200 p-3 text-xs text-red-700">
+          <FiAlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
+          <div>
+            <p className="font-semibold">Couldn&apos;t load projects</p>
+            <p className="opacity-80">{errorMsg}</p>
+          </div>
+        </div>
+      )}
 
       {/* Projects grid or empty state */}
       {cards.length > 0 ? (
