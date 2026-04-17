@@ -11,6 +11,7 @@ import {
   FiAlertCircle,
 } from "react-icons/fi";
 import { createClient } from "@/lib/supabase/client";
+import PlanReview, { type PlanPreview } from "./PlanReview";
 
 interface Message {
   role: "user" | "assistant";
@@ -54,6 +55,7 @@ export function IntakeChat({
   const [generating, setGenerating] = useState(false);
   const [creatingSub, setCreatingSub] = useState<string | null>(null);
   const [isMock, setIsMock] = useState(false);
+  const [preview, setPreview] = useState<PlanPreview | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   // Kick off the first assistant message once on mount.
@@ -140,16 +142,19 @@ export function IntakeChat({
         body: JSON.stringify({
           projectId,
           useIntake: true,
+          preview: true,
         }),
       });
       if (!res.ok) {
         const j = await res.json().catch(() => ({}));
         throw new Error(j.error || "Plan draft failed.");
       }
-      router.push(`/bunker/project/${projectId}/plan`);
-      router.refresh();
+      const data = await res.json();
+      if (data.mock) setIsMock(true);
+      setPreview(data.plan as PlanPreview);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Couldn't draft a plan.");
+    } finally {
       setGenerating(false);
     }
   }
@@ -212,6 +217,26 @@ export function IntakeChat({
         )
       )
     : 0;
+
+  // When a preview is ready, show the review in place of the chat.
+  if (preview) {
+    return (
+      <div className="flex flex-col gap-4">
+        {isMock && (
+          <div className="rounded-lg bg-amber-50 border border-amber-200 p-2 text-[11px] text-amber-800">
+            <strong>Mock mode:</strong> this plan was drafted by a scripted
+            template, not a live model. Add <code>ANTHROPIC_API_KEY</code> in
+            <code> .env.local</code> for real AI output.
+          </div>
+        )}
+        <PlanReview
+          projectId={projectId}
+          preview={preview}
+          onCancel={() => setPreview(null)}
+        />
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col gap-4">

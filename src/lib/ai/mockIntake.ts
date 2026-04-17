@@ -333,7 +333,7 @@ export function runMockIntake(input: MockIntakeInput): MockIntakeOutput {
       STEPS[STEPS.length - 1].recap?.(mergedForRecap) ??
       "That's plenty — I've got what I need.";
     return {
-      reply: `${wrap}\n\nHit **Draft my plan** whenever you're ready.`,
+      reply: "Hit Draft my plan whenever you're ready.",
       intake_patch: patch,
       progress: {
         captured_count: ESTIMATED_TOTAL,
@@ -349,7 +349,8 @@ export function runMockIntake(input: MockIntakeInput): MockIntakeOutput {
   const recap = step.recap?.(mergedForRecap) ?? null;
 
   return {
-    reply: recap ? `${recap}\n\n${step.ask(projectName)}` : step.ask(projectName),
+    // reply is JUST the question — the UI renders the recap as its own bubble
+    reply: step.ask(projectName),
     intake_patch: patch,
     progress: {
       captured_count: userTurns.length,

@@ -71,9 +71,9 @@ PACING:
 - Mark is_complete: true on your final turn, with a nice wrap message.
 
 STRUCTURE OF EACH RESPONSE (JSON):
-- reply: the next message to the user (the question, or the recap + question, or the wrap).
+- reply: the next question only. Keep it short. DO NOT prepend the recap to this field — the UI renders the recap as its own bubble above your reply.
 - intake_patch: ONLY the fields you learned this turn. Do not re-send fields already captured.
-- progress: { captured_count, estimated_total, recap } — recap is a string shown to the user when you included a recap in the reply, otherwise null.
+- progress: { captured_count, estimated_total, recap } — when you're ready to give a recap (every ~3 turns), put the recap text HERE and NOT in the reply. Otherwise set recap to null.
 - is_complete: true only when you're wrapping up.
 - detected_sub_projects: any side builds mentioned this turn.
 

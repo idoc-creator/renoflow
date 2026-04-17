@@ -122,9 +122,13 @@ export async function POST(request: Request) {
     skillsToLearn?: string;
     // New intake-driven path.
     useIntake?: boolean;
+    // If true, return the plan JSON without persisting anything.
+    // Used by the stage-by-stage review UI so the user can accept/reject
+    // before committing to DB.
+    preview?: boolean;
   };
 
-  const { projectId, useIntake } = body;
+  const { projectId, useIntake, preview } = body;
 
   if (!projectId) {
     return Response.json({ error: "projectId required" }, { status: 400 });
@@ -163,6 +167,20 @@ export async function POST(request: Request) {
       );
     }
     const mock = runMockDraftPlan(project.name, intake);
+    if (preview) {
+      return Response.json({
+        ok: true,
+        preview: true,
+        mock: true,
+        plan: {
+          stages: mock.stages,
+          suggested_milestones:
+            project.skip_permits === true
+              ? mock.suggested_milestones.filter((m) => m.kind === "delivery")
+              : mock.suggested_milestones,
+        },
+      });
+    }
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     await insertStagesAndSteps(supabase as any, projectId, mock);
 
@@ -271,6 +289,22 @@ Include an empty suggested_milestones array unless permits/inspections obviously
     }
 
     const parsed = JSON.parse(textBlock.text);
+
+    if (preview) {
+      return Response.json({
+        ok: true,
+        preview: true,
+        plan: {
+          stages: parsed.stages ?? [],
+          suggested_milestones:
+            project.skip_permits === true
+              ? (parsed.suggested_milestones ?? []).filter(
+                  (m: { kind: string }) => m.kind === "delivery"
+                )
+              : parsed.suggested_milestones ?? [],
+        },
+      });
+    }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     await insertStagesAndSteps(supabase as any, projectId, parsed);
