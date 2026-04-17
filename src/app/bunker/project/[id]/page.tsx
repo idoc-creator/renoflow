@@ -2,6 +2,17 @@ import { createClient } from "@/lib/supabase/server";
 import { notFound } from "next/navigation";
 import ProjectOverview from "@/components/project/ProjectOverview";
 
+interface StepTool {
+  name?: string;
+  need_to_buy?: boolean;
+}
+
+interface MaterialRow {
+  name?: string;
+  quantity?: number | string;
+  unit?: string;
+}
+
 export default async function ProjectOverviewPage({
   params,
 }: {
@@ -22,27 +33,82 @@ export default async function ProjectOverviewPage({
     notFound();
   }
 
-  // Count stages + steps
+  // Stages + steps with the jsonb fields we need for aggregation
   const { data: stages } = await supabase
     .from("stages")
-    .select("id, steps(id, is_completed)")
+    .select(
+      "id, linked_project_id, steps(id, is_completed, step_tools, tools_needed, materials_needed)"
+    )
     .eq("project_id", id);
 
   const stageCount = stages?.length ?? 0;
-  const stepCount =
-    stages?.reduce(
-      (sum, s) => sum + ((s.steps as { id: string }[])?.length ?? 0),
-      0
-    ) ?? 0;
-  const completedStepCount =
-    stages?.reduce(
-      (sum, s) =>
-        sum +
-        ((s.steps as { is_completed: boolean }[])?.filter(
-          (step) => step.is_completed
-        ).length ?? 0),
-      0
-    ) ?? 0;
+
+  // Aggregate steps
+  type Step = {
+    id: string;
+    is_completed: boolean;
+    step_tools: StepTool[] | null;
+    tools_needed: string[] | null;
+    materials_needed: MaterialRow[] | null;
+  };
+  const allSteps: Step[] = (stages ?? []).flatMap(
+    (s) => (s.steps as Step[]) ?? []
+  );
+  const stepCount = allSteps.length;
+  const completedStepCount = allSteps.filter((s) => s.is_completed).length;
+
+  // Sub-projects
+  const subProjectCount = (stages ?? []).filter(
+    (s) => s.linked_project_id
+  ).length;
+
+  // Dedupe tools by lowercased name; keep the "nicer" label (first seen)
+  // and mark need_to_buy if any occurrence says so.
+  const toolMap = new Map<string, { name: string; need_to_buy: boolean }>();
+  for (const step of allSteps) {
+    const fromStepTools = Array.isArray(step.step_tools) ? step.step_tools : [];
+    for (const t of fromStepTools) {
+      const name = (t?.name || "").trim();
+      if (!name) continue;
+      const key = name.toLowerCase();
+      const existing = toolMap.get(key);
+      toolMap.set(key, {
+        name: existing?.name ?? name,
+        need_to_buy: Boolean(existing?.need_to_buy) || Boolean(t?.need_to_buy),
+      });
+    }
+    const fromToolsNeeded = Array.isArray(step.tools_needed)
+      ? step.tools_needed
+      : [];
+    for (const t of fromToolsNeeded) {
+      const name = (t || "").trim();
+      if (!name) continue;
+      const key = name.toLowerCase();
+      if (!toolMap.has(key)) {
+        toolMap.set(key, { name, need_to_buy: false });
+      }
+    }
+  }
+  const tools = Array.from(toolMap.values()).sort((a, b) =>
+    a.name.localeCompare(b.name)
+  );
+
+  // Dedupe materials by lowercased name
+  const materialMap = new Map<string, string>();
+  for (const step of allSteps) {
+    const mats = Array.isArray(step.materials_needed)
+      ? step.materials_needed
+      : [];
+    for (const m of mats) {
+      const name = (m?.name || "").trim();
+      if (!name) continue;
+      const key = name.toLowerCase();
+      if (!materialMap.has(key)) materialMap.set(key, name);
+    }
+  }
+  const materials = Array.from(materialMap.values()).sort((a, b) =>
+    a.localeCompare(b)
+  );
 
   return (
     <ProjectOverview
@@ -50,6 +116,9 @@ export default async function ProjectOverviewPage({
       stageCount={stageCount}
       stepCount={stepCount}
       completedStepCount={completedStepCount}
+      subProjectCount={subProjectCount}
+      tools={tools}
+      materials={materials}
     />
   );
 }

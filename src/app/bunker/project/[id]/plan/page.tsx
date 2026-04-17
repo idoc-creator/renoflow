@@ -28,10 +28,32 @@ export default async function ProjectPlanPage({
     .eq("project_id", id)
     .order("sort_order", { ascending: true });
 
+  // Fetch names for any linked projects
+  const linkedIds = Array.from(
+    new Set(
+      (stages || [])
+        .map((s) => s.linked_project_id)
+        .filter((v): v is string => !!v)
+    )
+  );
+  const linkedNameById: Record<string, string> = {};
+  if (linkedIds.length > 0) {
+    const { data: linkedProjects } = await supabase
+      .from("projects")
+      .select("id, name")
+      .in("id", linkedIds);
+    for (const p of linkedProjects ?? []) {
+      linkedNameById[p.id] = p.name;
+    }
+  }
+
   // Sort steps within each stage
   const sortedStages: StageData[] = (stages || []).map(
     (stage: StageData & { steps: StageData["steps"] }) => ({
       ...stage,
+      linked_project_name: stage.linked_project_id
+        ? linkedNameById[stage.linked_project_id] ?? null
+        : null,
       steps: (stage.steps || []).sort(
         (a: { sort_order: number }, b: { sort_order: number }) =>
           a.sort_order - b.sort_order

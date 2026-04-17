@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { createClient } from "@/lib/supabase/client";
 
 export interface StageFormData {
   title: string;
@@ -8,24 +9,57 @@ export interface StageFormData {
   reason: string;
   estimated_cost: number;
   estimated_hours: number;
+  linked_project_id: string | null;
 }
 
 interface StageEditFormProps {
-  initial?: Partial<StageFormData>;
+  initial?: Partial<StageFormData> & { id?: string };
+  /** The project this stage belongs to — excluded from the linked-project picker. */
+  currentProjectId?: string;
   onSave: (data: StageFormData) => void | Promise<void>;
   onCancel: () => void;
   saveLabel?: string;
 }
 
+interface ProjectOption {
+  id: string;
+  name: string;
+}
+
 export default function StageEditForm({
   initial,
+  currentProjectId,
   onSave,
   onCancel,
   saveLabel = "Save",
 }: StageEditFormProps) {
   const [title, setTitle] = useState(initial?.title ?? "");
   const [description, setDescription] = useState(initial?.description ?? "");
+  const [linkedProjectId, setLinkedProjectId] = useState<string | null>(
+    initial?.linked_project_id ?? null
+  );
+  const [projects, setProjects] = useState<ProjectOption[]>([]);
   const [saving, setSaving] = useState(false);
+
+  // Load the user's other projects for the picker
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const supabase = createClient();
+      const { data } = await supabase
+        .from("projects")
+        .select("id, name")
+        .order("updated_at", { ascending: false });
+      if (!cancelled && data) {
+        setProjects(
+          data.filter((p) => p.id !== currentProjectId) as ProjectOption[]
+        );
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [currentProjectId]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -34,12 +68,10 @@ export default function StageEditForm({
     await onSave({
       title: title.trim(),
       description: description.trim(),
-      // Preserve existing values on edit; default to empty/zero for new stages.
-      // These fields still exist in schema and may be filled by template clones
-      // or the AI draft flow. We just don't collect them in the manual form.
       reason: initial?.reason ?? "",
       estimated_cost: initial?.estimated_cost ?? 0,
       estimated_hours: initial?.estimated_hours ?? 0,
+      linked_project_id: linkedProjectId,
     });
     setSaving(false);
   }
@@ -72,6 +104,28 @@ export default function StageEditForm({
           rows={2}
           className="w-full px-3 py-2 bg-cream rounded-lg border border-border-warm text-sm focus:outline-none focus:border-terracotta"
         />
+      </div>
+      <div>
+        <label className="block text-xs font-semibold text-charcoal mb-1">
+          Sub-project{" "}
+          <span className="font-normal text-warm-gray">(optional)</span>
+        </label>
+        <select
+          value={linkedProjectId ?? ""}
+          onChange={(e) => setLinkedProjectId(e.target.value || null)}
+          className="w-full px-3 py-2 bg-cream rounded-lg border border-border-warm text-sm focus:outline-none focus:border-terracotta"
+        >
+          <option value="">— Not linked —</option>
+          {projects.map((p) => (
+            <option key={p.id} value={p.id}>
+              {p.name}
+            </option>
+          ))}
+        </select>
+        <p className="mt-1 text-[11px] text-warm-gray">
+          Link this stage to another project (e.g. a vanity build inside a
+          bathroom reno).
+        </p>
       </div>
       <div className="flex items-center gap-2 pt-1">
         <button

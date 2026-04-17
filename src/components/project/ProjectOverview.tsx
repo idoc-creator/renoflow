@@ -1,5 +1,13 @@
 import Link from "next/link";
-import { FiClipboard, FiDollarSign, FiImage, FiCamera } from "react-icons/fi";
+import {
+  FiClipboard,
+  FiDollarSign,
+  FiImage,
+  FiCamera,
+  FiTool,
+  FiPackage,
+  FiShoppingCart,
+} from "react-icons/fi";
 
 interface ProjectOverviewProps {
   project: {
@@ -17,6 +25,9 @@ interface ProjectOverviewProps {
   stageCount: number;
   stepCount: number;
   completedStepCount: number;
+  subProjectCount?: number;
+  tools?: { name: string; need_to_buy: boolean }[];
+  materials?: string[];
 }
 
 export default function ProjectOverview({
@@ -24,7 +35,11 @@ export default function ProjectOverview({
   stageCount,
   stepCount,
   completedStepCount,
+  subProjectCount = 0,
+  tools = [],
+  materials = [],
 }: ProjectOverviewProps) {
+  const toolsToBuy = tools.filter((t) => t.need_to_buy).length;
   const savings =
     (project.contractor_estimate ?? 0) - (project.diy_estimate ?? 0);
   const budgetRemaining =
@@ -98,6 +113,105 @@ export default function ProjectOverview({
           accent
         />
       </div>
+
+      {/* Tools + Materials + Sub-projects aggregation */}
+      {(tools.length > 0 || materials.length > 0 || subProjectCount > 0) && (
+        <div className="grid gap-3 md:grid-cols-2">
+          {/* Tools */}
+          <section className="rounded-2xl bg-white border border-border-warm p-5">
+            <div className="mb-3 flex items-center justify-between">
+              <h3 className="font-serif text-lg text-charcoal inline-flex items-center gap-2">
+                <FiTool className="h-4 w-4 text-warm-gray" />
+                Tools
+                <span className="text-xs font-sans font-medium text-warm-gray">
+                  {tools.length}
+                </span>
+              </h3>
+              {toolsToBuy > 0 && (
+                <span className="inline-flex items-center gap-1 rounded-full bg-terracotta/10 px-2 py-0.5 text-[11px] font-medium text-terracotta-dark">
+                  <FiShoppingCart className="h-3 w-3" />
+                  {toolsToBuy} to buy
+                </span>
+              )}
+            </div>
+            {tools.length === 0 ? (
+              <p className="text-sm text-warm-gray italic">
+                Tools you add to steps will show up here.
+              </p>
+            ) : (
+              <div className="flex flex-wrap gap-1.5">
+                {tools.slice(0, 30).map((t) => (
+                  <span
+                    key={t.name}
+                    className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-medium ${
+                      t.need_to_buy
+                        ? "bg-terracotta/10 text-terracotta-dark"
+                        : "bg-sage/10 text-sage-dark"
+                    }`}
+                  >
+                    {t.need_to_buy ? "🛒" : "✓"} {t.name}
+                  </span>
+                ))}
+                {tools.length > 30 && (
+                  <span className="text-[11px] text-warm-gray">
+                    +{tools.length - 30} more
+                  </span>
+                )}
+              </div>
+            )}
+          </section>
+
+          {/* Materials */}
+          <section className="rounded-2xl bg-white border border-border-warm p-5">
+            <div className="mb-3 flex items-center justify-between">
+              <h3 className="font-serif text-lg text-charcoal inline-flex items-center gap-2">
+                <FiPackage className="h-4 w-4 text-warm-gray" />
+                Materials
+                <span className="text-xs font-sans font-medium text-warm-gray">
+                  {materials.length}
+                </span>
+              </h3>
+              <Link
+                href={`/bunker/project/${project.id}/budget`}
+                className="text-[11px] font-medium text-terracotta hover:underline"
+              >
+                Shopping list →
+              </Link>
+            </div>
+            {materials.length === 0 ? (
+              <p className="text-sm text-warm-gray italic">
+                Materials you add to steps will show up here.
+              </p>
+            ) : (
+              <div className="flex flex-wrap gap-1.5">
+                {materials.slice(0, 30).map((m) => (
+                  <span
+                    key={m}
+                    className="inline-flex items-center gap-1 rounded-full bg-cream px-2 py-0.5 text-[11px] font-medium text-charcoal"
+                  >
+                    {m}
+                  </span>
+                ))}
+                {materials.length > 30 && (
+                  <span className="text-[11px] text-warm-gray">
+                    +{materials.length - 30} more
+                  </span>
+                )}
+              </div>
+            )}
+          </section>
+        </div>
+      )}
+
+      {subProjectCount > 0 && (
+        <p className="text-xs text-warm-gray">
+          This project includes{" "}
+          <span className="font-semibold text-charcoal">
+            {subProjectCount} sub-project{subProjectCount === 1 ? "" : "s"}
+          </span>{" "}
+          linked from stages.
+        </p>
+      )}
 
       {/* Quick links to other tabs */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">

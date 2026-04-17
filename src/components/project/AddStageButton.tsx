@@ -6,15 +6,20 @@ import StageEditForm, { type StageFormData } from "./StageEditForm";
 
 interface AddStageButtonProps {
   onCreate: (data: StageFormData) => void | Promise<void>;
+  currentProjectId?: string;
 }
 
-export default function AddStageButton({ onCreate }: AddStageButtonProps) {
+export default function AddStageButton({
+  onCreate,
+  currentProjectId,
+}: AddStageButtonProps) {
   const [open, setOpen] = useState(false);
 
   if (open) {
     return (
       <div className="rounded-xl bg-white border border-border-warm shadow-sm">
         <StageEditForm
+          currentProjectId={currentProjectId}
           onSave={async (data) => {
             await onCreate(data);
             setOpen(false);

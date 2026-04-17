@@ -2,6 +2,7 @@
 
 import { useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import {
   FiChevronDown,
   FiChevronRight,
@@ -9,6 +10,7 @@ import {
   FiTrash2,
   FiArrowUp,
   FiArrowDown,
+  FiExternalLink,
 } from "react-icons/fi";
 import { StepCard, type StepData } from "./StepCard";
 import { createClient } from "@/lib/supabase/client";
@@ -37,6 +39,8 @@ export interface StageData {
   estimated_hours: number;
   status: string;
   sort_order: number;
+  linked_project_id: string | null;
+  linked_project_name?: string | null;
   steps: StepData[];
 }
 
@@ -145,6 +149,7 @@ export function StageList({
         reason: data.reason,
         estimated_cost: data.estimated_cost,
         estimated_hours: data.estimated_hours,
+        linked_project_id: data.linked_project_id,
         sort_order: maxSort + 1,
         status: "pending",
       })
@@ -170,12 +175,23 @@ export function StageList({
         reason: data.reason,
         estimated_cost: data.estimated_cost,
         estimated_hours: data.estimated_hours,
+        linked_project_id: data.linked_project_id,
       })
       .eq("id", stageId);
 
     if (error) {
       alert("Failed to save changes.");
       return;
+    }
+    // Look up the linked project's name for the chip, if a link was set
+    let linkedName: string | null = null;
+    if (data.linked_project_id) {
+      const { data: linked } = await supabase
+        .from("projects")
+        .select("name")
+        .eq("id", data.linked_project_id)
+        .single();
+      linkedName = linked?.name ?? null;
     }
     setStages((prev) =>
       prev.map((s) =>
@@ -187,6 +203,8 @@ export function StageList({
               reason: data.reason,
               estimated_cost: data.estimated_cost,
               estimated_hours: data.estimated_hours,
+              linked_project_id: data.linked_project_id,
+              linked_project_name: linkedName,
             }
           : s
       )
@@ -456,6 +474,7 @@ export function StageList({
             {isEditing ? (
               <StageEditForm
                 initial={stage}
+                currentProjectId={projectId}
                 onSave={(data) => handleUpdateStage(stage.id, data)}
                 onCancel={() => setEditingStageId(null)}
                 saveLabel="Save changes"
@@ -515,6 +534,16 @@ export function StageList({
                       <span>
                         {completedSteps}/{totalSteps} steps
                       </span>
+                      {stage.linked_project_id && (
+                        <Link
+                          href={`/bunker/project/${stage.linked_project_id}`}
+                          onClick={(e) => e.stopPropagation()}
+                          className="inline-flex items-center gap-1 rounded-full bg-terracotta/10 px-2 py-0.5 text-[11px] font-medium text-terracotta-dark hover:bg-terracotta/20 transition-colors"
+                        >
+                          <FiExternalLink className="h-3 w-3" />
+                          {stage.linked_project_name || "Linked project"}
+                        </Link>
+                      )}
                     </div>
 
                     {totalSteps > 0 && (
@@ -615,7 +644,10 @@ export function StageList({
       })}
 
       {/* Add stage button */}
-      <AddStageButton onCreate={handleCreateStage} />
+      <AddStageButton
+        onCreate={handleCreateStage}
+        currentProjectId={projectId}
+      />
 
       {/* Delete confirmation */}
       <ConfirmDelete
