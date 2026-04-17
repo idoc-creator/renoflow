@@ -49,7 +49,7 @@ export default function NewProjectPage() {
       return;
     }
 
-    router.push(`/bunker/project/${data.id}`);
+    router.push(`/bunker/project/${data.id}/intake`);
   }
 
   return (

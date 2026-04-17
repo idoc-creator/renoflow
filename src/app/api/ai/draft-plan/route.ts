@@ -12,14 +12,15 @@ const SYSTEM_PROMPT = `You are an expert DIY renovation planner and coach. Your 
 
 Key principles:
 - SEQUENCE stages by dependencies and livability. If a constraint says "only bathroom" or "living in house", stages must keep the space usable — don't leave the user without a toilet or shower unnecessarily. Break work into phases that preserve livability.
-- RESPECT skill level. Flag steps that should be hired out for safety or code compliance (electrical, structural, gas) when the user is not experienced.
-- HIGHLIGHT the specific skills the user wants to learn as their own stages or distinct step groups. If they want to run PEX themselves, give them a "Rough-in plumbing (PEX)" stage with real, specific steps.
+- RESPECT skill level and the user's stated DIY scope. If a trade is in their hired_scope, the stage for that trade should be coordination-focused ("Mark box locations for electrician", "Schedule rough-in visit"), not how-to-wire-it steps.
+- HONOR permits preference. If skip_permits is true, do not create permit/inspection steps. If false, include permit + inspection touchpoints.
+- ANTICIPATE surprises for old houses and known-risky stages (demo in pre-1980, subfloor at toilet flange, lath-and-plaster dust). Mention them in the stage "reason" so the user knows what to expect.
 - COST estimates should reflect realistic home-improvement-store pricing.
 - EXPLAIN why each stage is ordered the way it is in the "reason" field — help them understand dependencies and livability tradeoffs.
-- BE practical and honest about difficulty. Don't sugarcoat, but be encouraging.
-- For each step, include: a clear title, a description with real detail (not vague), skill level, estimated minutes, and tools needed.
+- BE practical and honest about difficulty. Encouraging, never condescending.
+- For each step, include: a clear title, a description with real detail, skill level, estimated minutes, and tools needed.
 
-This is a TENTATIVE draft. The user will edit it. Prefer 4-7 stages with 3-8 steps each.`;
+This is a TENTATIVE draft. The user will edit it. Prefer 5-8 stages with 3-8 steps each.`;
 
 const PLAN_SCHEMA = {
   type: "object" as const,
@@ -73,8 +74,29 @@ const PLAN_SCHEMA = {
         additionalProperties: false,
       },
     },
+    suggested_milestones: {
+      type: "array" as const,
+      items: {
+        type: "object" as const,
+        properties: {
+          title: { type: "string" as const },
+          kind: {
+            type: "string" as const,
+            enum: ["permit", "inspection", "delivery", "other"],
+          },
+          notes: { type: "string" as const },
+          blocks_stage_index: {
+            type: ["integer", "null"] as const,
+            description:
+              "0-based index of the stage this milestone blocks (gates completing that stage). Null if it doesn't gate a specific stage.",
+          },
+        },
+        required: ["title", "kind", "notes", "blocks_stage_index"],
+        additionalProperties: false,
+      },
+    },
   },
-  required: ["stages"],
+  required: ["stages", "suggested_milestones"],
   additionalProperties: false,
 };
 
@@ -99,34 +121,30 @@ export async function POST(request: Request) {
     return Response.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const body = await request.json();
-  const {
-    projectId,
-    scope,
-    constraints,
-    existingVsTarget,
-    skillLevel,
-    skillsToLearn,
-  } = body as {
+  const body = (await request.json()) as {
     projectId: string;
-    scope: string;
-    constraints: string[];
-    existingVsTarget: string;
-    skillLevel: string;
-    skillsToLearn: string;
+    // Legacy prompt-driven fields (kept for back-compat).
+    scope?: string;
+    constraints?: string[];
+    existingVsTarget?: string;
+    skillLevel?: string;
+    skillsToLearn?: string;
+    // New intake-driven path.
+    useIntake?: boolean;
   };
 
-  if (!projectId || !scope) {
-    return Response.json(
-      { error: "projectId and scope are required" },
-      { status: 400 }
-    );
+  const { projectId, useIntake } = body;
+
+  if (!projectId) {
+    return Response.json({ error: "projectId required" }, { status: 400 });
   }
 
-  // Verify project ownership
+  // Verify project ownership + pull intake if requested
   const { data: project } = await supabase
     .from("projects")
-    .select("id, name, category, budget_total")
+    .select(
+      "id, name, category, budget_total, intake_data, intake_complete, skip_permits"
+    )
     .eq("id", projectId)
     .eq("user_id", user.id)
     .single();
@@ -135,17 +153,53 @@ export async function POST(request: Request) {
     return Response.json({ error: "Project not found" }, { status: 404 });
   }
 
-  const userMessage = `Please draft a staged plan for this DIY project.
+  let userMessage: string;
+
+  if (useIntake) {
+    const intake = (project.intake_data ?? {}) as Record<string, unknown>;
+    if (!intake || Object.keys(intake).length === 0) {
+      return Response.json(
+        { error: "No intake data yet — run the intake first." },
+        { status: 400 }
+      );
+    }
+    userMessage = `Draft a staged plan using the intake below.
+
+Project name: ${project.name}
+Skip permits: ${project.skip_permits === true ? "YES (do not generate permit/inspection milestones, but you may mention in stage reasons that permits would normally apply here)" : "NO — include permits + inspections as suggested_milestones"}
+
+Full intake:
+${JSON.stringify(intake, null, 2)}
+
+Requirements:
+- Respect diy_scope vs hired_scope. For hired trades, generate COORDINATION stages, not how-to stages.
+- If walls_type is "lath_plaster" or year_built is pre-1980, include an early "Test + Protect" stage covering lead/asbestos testing, dust containment, tub protection.
+- If location is Oregon + is_primary_residence is true + electrical is DIY, mention the Oregon homeowner electrical permit affidavit in that stage's reason.
+- Suggest 2-6 milestones (permits, inspections, long-lead-time deliveries). Set blocks_stage_index where appropriate (e.g., rough-in inspection blocks the stage that closes walls).
+- For each "Likely surprises" that apply to a stage, include them in its "reason" field naturally.`;
+  } else {
+    const {
+      scope,
+      constraints,
+      existingVsTarget,
+      skillLevel,
+      skillsToLearn,
+    } = body;
+    if (!scope) {
+      return Response.json({ error: "scope required" }, { status: 400 });
+    }
+    userMessage = `Please draft a staged plan for this DIY project.
 
 **Project:** ${project.name}${project.category ? ` (${project.category})` : ""}
 **Budget:** ${project.budget_total ? `$${project.budget_total}` : "Not specified"}
 **Scope:** ${scope}
 **Current state → target:** ${existingVsTarget || "Not specified"}
-**Constraints:** ${constraints?.length > 0 ? constraints.join("; ") : "None specified"}
+**Constraints:** ${constraints && constraints.length > 0 ? constraints.join("; ") : "None specified"}
 **Skill level:** ${skillLevel || "Not specified"}
 **Specific skills they want to learn themselves:** ${skillsToLearn || "None specified"}
 
-Draft a realistic plan with proper staging. Remember to explain why each stage is ordered the way it is, preserve livability given the constraints, and include real technical depth in the steps for skills the user specifically wants to learn.`;
+Include an empty suggested_milestones array unless permits/inspections obviously apply.`;
+  }
 
   try {
     const response = await client.messages.create({
@@ -171,6 +225,48 @@ Draft a realistic plan with proper staging. Remember to explain why each stage i
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     await insertStagesAndSteps(supabase as any, projectId, parsed);
+
+    // Re-fetch just-inserted stages so we can resolve blocks_stage_index → stage_id
+    if (
+      parsed.suggested_milestones?.length > 0 &&
+      project.skip_permits !== true
+    ) {
+      const { data: insertedStages } = await supabase
+        .from("stages")
+        .select("id, sort_order")
+        .eq("project_id", projectId)
+        .order("sort_order", { ascending: true });
+
+      const stagesList = insertedStages ?? [];
+      const milestonesToInsert = parsed.suggested_milestones.map(
+        (
+          m: {
+            title: string;
+            kind: string;
+            notes: string;
+            blocks_stage_index: number | null;
+          },
+          idx: number
+        ) => ({
+          project_id: projectId,
+          title: m.title,
+          kind: m.kind,
+          status: "pending",
+          notes: m.notes,
+          blocks_stage_id:
+            m.blocks_stage_index !== null &&
+            m.blocks_stage_index >= 0 &&
+            m.blocks_stage_index < stagesList.length
+              ? stagesList[m.blocks_stage_index].id
+              : null,
+          sort_order: idx,
+        })
+      );
+
+      if (milestonesToInsert.length > 0) {
+        await supabase.from("project_milestones").insert(milestonesToInsert);
+      }
+    }
 
     return Response.json({ ok: true, stageCount: parsed.stages?.length ?? 0 });
   } catch (error) {

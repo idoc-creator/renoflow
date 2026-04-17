@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { FiMessageCircle } from "react-icons/fi";
 import { createClient } from "@/lib/supabase/client";
 
 interface Project {
@@ -216,6 +218,21 @@ export function ProjectSettingsForm({ project }: { project: Project }) {
         {savedAt && !saving && (
           <span className="text-xs text-warm-gray">Saved.</span>
         )}
+      </div>
+
+      <div className="rounded-2xl bg-white border border-border-warm p-6">
+        <h3 className="font-serif text-lg text-charcoal mb-1">Intake</h3>
+        <p className="text-sm text-warm-gray mb-3">
+          The intake interview shapes every AI suggestion for this project.
+          Re-run it any time if your scope changes.
+        </p>
+        <Link
+          href={`/bunker/project/${project.id}/intake`}
+          className="inline-flex items-center gap-1.5 rounded-lg border border-border-warm bg-white px-3 py-1.5 text-sm font-medium text-charcoal hover:border-terracotta"
+        >
+          <FiMessageCircle className="h-4 w-4" />
+          Re-run intake
+        </Link>
       </div>
 
       <div className="rounded-2xl bg-white border border-terracotta/30 p-6">
