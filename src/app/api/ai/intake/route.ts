@@ -1,5 +1,6 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { createClient } from "@/lib/supabase/server";
+import { runMockIntake } from "@/lib/ai/mockIntake";
 
 function getAnthropicClient() {
   const apiKey = process.env.ANTHROPIC_API_KEY;
@@ -129,16 +130,6 @@ interface ChatMessage {
 
 export async function POST(request: Request) {
   const client = getAnthropicClient();
-  if (!client) {
-    return Response.json(
-      {
-        error:
-          "Intake is unavailable — ANTHROPIC_API_KEY is not set in .env.local.",
-      },
-      { status: 503 }
-    );
-  }
-
   const supabase = await createClient();
   const {
     data: { user },
@@ -170,6 +161,55 @@ export async function POST(request: Request) {
 
   if (!project) {
     return Response.json({ error: "Project not found" }, { status: 404 });
+  }
+
+  // No API key? Fall back to the scripted mock so the UX can be tested
+  // end-to-end without configuration.
+  if (!client) {
+    const userTurns = messages
+      .filter((m) => m.role === "user")
+      .map((m) => m.content);
+    const mock = runMockIntake({
+      projectName: project.name,
+      userTurns,
+      intakeSoFar: intakeSoFar ?? {},
+    });
+
+    const merged = {
+      ...(intakeSoFar ?? {}),
+      ...mock.intake_patch,
+    };
+    for (const key of ["specifics", "location"] as const) {
+      if (
+        mock.intake_patch[key] &&
+        typeof mock.intake_patch[key] === "object" &&
+        intakeSoFar?.[key] &&
+        typeof intakeSoFar[key] === "object"
+      ) {
+        merged[key] = {
+          ...(intakeSoFar[key] as Record<string, unknown>),
+          ...(mock.intake_patch[key] as Record<string, unknown>),
+        };
+      }
+    }
+
+    await supabase
+      .from("projects")
+      .update({
+        intake_data: merged,
+        intake_complete: mock.is_complete === true,
+        skip_permits: merged.skip_permits === true,
+      })
+      .eq("id", projectId);
+
+    return Response.json({
+      reply: mock.reply,
+      intake: merged,
+      progress: mock.progress,
+      is_complete: mock.is_complete,
+      detected_sub_projects: mock.detected_sub_projects,
+      mock: true,
+    });
   }
 
   // Prepend a system context message that tells the AI what's already captured

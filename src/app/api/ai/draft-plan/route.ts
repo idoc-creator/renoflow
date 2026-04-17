@@ -1,6 +1,7 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { createClient } from "@/lib/supabase/server";
 import { insertStagesAndSteps } from "@/lib/projects/insertStagesAndSteps";
+import { runMockDraftPlan } from "@/lib/ai/mockDraftPlan";
 
 function getAnthropicClient() {
   const apiKey = process.env.ANTHROPIC_API_KEY;
@@ -102,16 +103,6 @@ const PLAN_SCHEMA = {
 
 export async function POST(request: Request) {
   const client = getAnthropicClient();
-  if (!client) {
-    return Response.json(
-      {
-        error:
-          "Plan drafting is unavailable — ANTHROPIC_API_KEY is not set in .env.local.",
-      },
-      { status: 503 }
-    );
-  }
-
   const supabase = await createClient();
   const {
     data: { user },
@@ -151,6 +142,64 @@ export async function POST(request: Request) {
 
   if (!project) {
     return Response.json({ error: "Project not found" }, { status: 404 });
+  }
+
+  // Mock fallback when no API key — still honors intake + skip_permits.
+  if (!client) {
+    if (!useIntake) {
+      return Response.json(
+        {
+          error:
+            "Plan drafting is unavailable — ANTHROPIC_API_KEY is not set. The intake path can still run in mock mode.",
+        },
+        { status: 503 }
+      );
+    }
+    const intake = (project.intake_data ?? {}) as Record<string, unknown>;
+    if (Object.keys(intake).length === 0) {
+      return Response.json(
+        { error: "No intake data yet — run the intake first." },
+        { status: 400 }
+      );
+    }
+    const mock = runMockDraftPlan(project.name, intake);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    await insertStagesAndSteps(supabase as any, projectId, mock);
+
+    if (
+      mock.suggested_milestones.length > 0 &&
+      project.skip_permits !== true
+    ) {
+      const { data: insertedStages } = await supabase
+        .from("stages")
+        .select("id, sort_order")
+        .eq("project_id", projectId)
+        .order("sort_order", { ascending: true });
+      const stagesList = insertedStages ?? [];
+      const rows = mock.suggested_milestones.map((m, idx) => ({
+        project_id: projectId,
+        title: m.title,
+        kind: m.kind,
+        status: "pending",
+        notes: m.notes,
+        blocks_stage_id:
+          m.blocks_stage_index !== null &&
+          m.blocks_stage_index >= 0 &&
+          m.blocks_stage_index < stagesList.length
+            ? stagesList[m.blocks_stage_index].id
+            : null,
+        sort_order: idx,
+      }));
+      if (rows.length > 0) {
+        await supabase.from("project_milestones").insert(rows);
+      }
+    }
+
+    return Response.json({
+      ok: true,
+      stageCount: mock.stages.length,
+      mock: true,
+    });
   }
 
   let userMessage: string;

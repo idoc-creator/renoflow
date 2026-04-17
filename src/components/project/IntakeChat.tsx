@@ -53,6 +53,7 @@ export function IntakeChat({
   const [detectedSubs, setDetectedSubs] = useState<SubProject[]>([]);
   const [generating, setGenerating] = useState(false);
   const [creatingSub, setCreatingSub] = useState<string | null>(null);
+  const [isMock, setIsMock] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   // Kick off the first assistant message once on mount.
@@ -89,6 +90,7 @@ export function IntakeChat({
         throw new Error(j.error || `HTTP ${res.status}`);
       }
       const data = await res.json();
+      if (data.mock) setIsMock(true);
       setIntake(data.intake ?? {});
       setProgress(data.progress ?? null);
       setMessages((prev) => [
@@ -213,6 +215,15 @@ export function IntakeChat({
 
   return (
     <div className="flex flex-col gap-4">
+      {isMock && (
+        <div className="rounded-lg bg-amber-50 border border-amber-200 p-2 text-[11px] text-amber-800">
+          <strong>Mock mode:</strong> ANTHROPIC_API_KEY isn&apos;t set, so I&apos;m
+          running a scripted conversation. The flow, recaps, sub-project
+          detection, and plan draft all work — you just won&apos;t get
+          open-ended AI answers. Add the key in <code>.env.local</code> to
+          switch to real AI.
+        </div>
+      )}
       {/* Progress strip */}
       <div className="rounded-xl bg-white border border-border-warm p-3">
         <div className="flex items-center justify-between gap-3 mb-2">
