@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Inter_Tight, Fraunces } from "next/font/google";
+import { Inter_Tight, Fraunces, Caveat } from "next/font/google";
 import "./globals.css";
 
 /*
@@ -22,6 +22,17 @@ const fraunces = Fraunces({
   // Variable font — pulls 100-900 range. Axes unlock SOFT + WONK for subtle
   // editorial tuning in specific components later (e.g., display headlines).
   axes: ["SOFT", "WONK", "opsz"],
+});
+
+/*
+  Caveat is the bullet-journal / handwritten-accent font. Used sparingly
+  as flavor (pull quotes, welcome notes, hand-drawn labels) — never for
+  body copy or structural headings. See docs/design-system.md for rules.
+*/
+const caveat = Caveat({
+  variable: "--font-caveat",
+  subsets: ["latin"],
+  weight: ["400", "600", "700"],
 });
 
 export const metadata: Metadata = {
@@ -52,7 +63,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${interTight.variable} ${fraunces.variable} h-full antialiased`}
+      className={`${interTight.variable} ${fraunces.variable} ${caveat.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col font-sans bg-paper text-ink">
         {children}

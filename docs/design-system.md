@@ -73,6 +73,7 @@ All colors live in `globals.css` under `@theme inline`. Changes propagate throug
 
 - **Display — Fraunces** (variable serif with SOFT/WONK/opsz axes). Editorial contemporary serif. Headlines, project names, feature titles.
 - **Body — Inter Tight** (400-700). Slightly tighter than Inter; stronger weight reads cleaner at small sizes.
+- **Hand — Caveat** (400/600/700). Flavor only: pull quotes, welcome notes, hand-drawn labels, circular stamp badges. **Never** body copy, **never** structural headings. One or two touches per page max.
 
 Loaded via `next/font/google` in `layout.tsx`.
 
@@ -127,6 +128,18 @@ The iconic walnut brown shows up in:
 
 Everything else defaults to ink / graphite / white / ivory. **If everything is walnut, nothing is.** Scarcity is the point.
 
+### Bullet-journal accents (marketing pages only)
+
+A light dose of handwritten-script accent pulls marketing pages toward the warm, editorial "Etta's Acres" feel without breaking the Field Notes identity. **Never use these inside the app's planner.**
+
+- `.font-hand` — Caveat at 600, scales with its container
+- `.font-hand-lg` — Caveat at 700, 2rem display size
+- `.stamp` — circular 6rem walnut-bordered Caveat stamp, rotated -6deg. Use `<StampBadge>` component (`src/components/marketing/StampBadge.tsx`)
+- `.underline-hand` — solid walnut underline for emphasized phrases
+- `.rotate-nudge-left` / `.rotate-nudge-right` — ±2.5deg rotation for polaroid-style photo cards
+
+Pattern: one stamp + one hand-scripted accent per hero at most. Body copy stays Inter Tight; headings stay Fraunces. Script is seasoning, not the dish.
+
 ### Paper grid (default Bunker background)
 Pure white + a whisper 28px notebook grid. Applied as the default Bunker shell background via `.bg-grid`. Subtle enough (0.035 alpha) to sit behind images, text, and cards without competing.
 
@@ -158,6 +171,7 @@ Live tokens + components: **`/design`** — renders every swatch, type specimen,
 
 | Date | Change |
 |---|---|
+| 2026-04-18 | Added Caveat (handwritten script) + bullet-journal accent utilities: .font-hand, .font-hand-lg, .stamp (StampBadge component), .underline-hand, .rotate-nudge-left/right. Marketing-page only — no planner use. |
 | 2026-04-18 | Deepened walnut to richer espresso #4a2b17. Bunker bg is now pure white + muted gridline texture by default (was warm cream). |
 | 2026-04-18 | Field Notes palette — walnut iconic, all warm earth tones, pure white background. Retired Pin Red. |
 | 2026-04-17 | Initial editorial palette + Fraunces / Inter Tight typography. |

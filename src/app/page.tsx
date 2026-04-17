@@ -11,6 +11,7 @@ import { MarketingTopNav } from "@/components/marketing/MarketingTopNav";
 import { SiteFooter } from "@/components/marketing/SiteFooter";
 import { BetaSignupForm } from "@/components/marketing/BetaSignupForm";
 import { ProductTour } from "@/components/marketing/ProductTour";
+import { StampBadge } from "@/components/marketing/StampBadge";
 
 export const metadata = {
   title: "Bench — Stop pinning. Start building.",
@@ -29,14 +30,21 @@ export default async function LandingPage() {
       <MarketingTopNav isAuthed={!!user} />
 
       {/* Hero */}
-      <section className="bg-grid">
-        <div className="mx-auto max-w-6xl px-6 pt-20 pb-24 md:pt-28 md:pb-32">
-          <p className="text-caption uppercase tracking-[0.22em] text-walnut">
-            Now in private beta
-          </p>
-          <h1 className="mt-4 font-display-xl text-ink max-w-4xl">
+      <section className="bg-grid relative overflow-hidden">
+        <div className="mx-auto max-w-6xl px-6 pt-20 pb-24 md:pt-28 md:pb-32 relative">
+          {/* Stamp in the upper right — hidden on mobile */}
+          <div className="hidden md:block absolute right-6 top-20">
+            <StampBadge>
+              hey,
+              <br />
+              friend
+            </StampBadge>
+          </div>
+
+          <p className="font-hand-lg text-walnut">welcome to the workshop —</p>
+          <h1 className="mt-2 font-display-xl text-ink max-w-4xl">
             Stop pinning.{" "}
-            <span className="text-walnut">Start building.</span>
+            <span className="underline-hand">Start building.</span>
           </h1>
           <p className="mt-6 text-lg md:text-xl text-graphite max-w-2xl leading-relaxed">
             Bench turns your inspiration into a real, staged plan you can
@@ -45,7 +53,7 @@ export default async function LandingPage() {
             contractor know-how.
           </p>
           <div className="mt-8">
-            <BetaSignupForm source="landing-hero" />
+            <BetaSignupForm source="landing-hero" roleInterest="diyer" />
           </div>
         </div>
       </section>
@@ -124,20 +132,29 @@ export default async function LandingPage() {
       {/* Beta note */}
       <section className="border-t border-hairline">
         <div className="mx-auto max-w-3xl px-6 py-20 text-center">
-          <p className="text-caption uppercase tracking-[0.22em] text-walnut">
-            About the beta
-          </p>
-          <h2 className="mt-3 font-display-lg text-ink">
-            Free while we&apos;re building.
+          <p className="font-hand-lg text-walnut">p.s.</p>
+          <h2 className="mt-2 font-display-lg text-ink">
+            Free to plan. $9 to unlock everything.
           </h2>
           <p className="mt-6 text-lg text-graphite leading-relaxed">
-            Bench is in private beta. No pricing, no paywall, no card. We&apos;re
-            looking for makers who want to shape the product by actually using
-            it on real projects. Leave your email and we&apos;ll send one note
-            when the doors open.
+            Bench Free gets you three active projects, all AI features, and a
+            15% cut when your friends sign up through a share link. Pro ($9/mo)
+            unlocks unlimited projects, priority AI, and a bigger referral
+            share. That&apos;s the whole thing. See{" "}
+            <a
+              href="/pricing"
+              className="text-walnut underline hover:text-walnut-dark"
+            >
+              pricing
+            </a>{" "}
+            for the rest.
           </p>
           <div className="mt-10 flex justify-center">
-            <BetaSignupForm source="landing-beta" cta="Join the beta" />
+            <BetaSignupForm
+              source="landing-beta"
+              cta="Join the beta"
+              roleInterest="diyer"
+            />
           </div>
           <p className="mt-8 text-sm text-graphite">
             An iPhone app is coming — for now Bench lives on the web, mobile

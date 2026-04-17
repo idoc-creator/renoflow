@@ -11,6 +11,7 @@
   /* Fonts */
   --font-sans: var(--font-inter-tight), var(--font-inter), ui-sans-serif, system-ui, sans-serif;
   --font-serif: var(--font-fraunces), var(--font-instrument-serif), ui-serif, Georgia, serif;
+  --font-hand: var(--font-caveat), ui-serif, cursive;
 
   /* Neutrals — pure-white paper + warm walnut ink */
   --color-paper: #ffffff;
@@ -101,4 +102,60 @@ h3 { font-size: 1.25rem; line-height: 1.3; }
   font-size: 0.75rem;
   line-height: 1.4;
   font-weight: 500;
+}
+
+/* ─── Bullet-journal / handwritten accents ─────────────────────────────
+   Flavor only. Never for body copy or structural headings. Use for pull
+   quotes, greetings, hand-labels, rotated notes. See docs/design-system.md.
+*/
+
+/* Handwritten script — scale one notch up because Caveat reads smaller */
+.font-hand {
+  font-family: var(--font-hand);
+  font-weight: 600;
+  letter-spacing: 0;
+  line-height: 1.2;
+}
+.font-hand-lg {
+  font-family: var(--font-hand);
+  font-weight: 700;
+  font-size: 2rem;
+  line-height: 1.1;
+  letter-spacing: -0.005em;
+}
+
+/* Circular stamp badge — like the "ABOUT ME · ABOUT ME ·" wheel on Etta's */
+.stamp {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 6rem;
+  height: 6rem;
+  border-radius: 9999px;
+  border: 2px solid var(--color-walnut);
+  color: var(--color-walnut);
+  background: var(--color-paper);
+  text-align: center;
+  font-family: var(--font-hand);
+  font-weight: 700;
+  font-size: 1.1rem;
+  line-height: 1.05;
+  transform: rotate(-6deg);
+}
+
+/* Subtle image rotations used on polaroid-style photo cards */
+.rotate-nudge-left  { transform: rotate(-2.5deg); }
+.rotate-nudge-right { transform: rotate(2.5deg); }
+
+/* Hand-drawn underline — for emphasizing key phrases in running copy */
+.underline-hand {
+  background-image: linear-gradient(
+    to right,
+    var(--color-walnut) 0%,
+    var(--color-walnut) 100%
+  );
+  background-repeat: no-repeat;
+  background-position: 0 95%;
+  background-size: 100% 6px;
+  padding-bottom: 2px;
 }

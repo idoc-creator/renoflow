@@ -9,11 +9,12 @@ import {
 import { MarketingTopNav } from "@/components/marketing/MarketingTopNav";
 import { SiteFooter } from "@/components/marketing/SiteFooter";
 import { BetaSignupForm } from "@/components/marketing/BetaSignupForm";
+import { StampBadge } from "@/components/marketing/StampBadge";
 
 export const metadata = {
   title: "Pricing — Bench",
   description:
-    "Free forever for DIYers. Limited to no ads. When Bench makes money, so do you.",
+    "Free to start, $9 to unlock everything, and a cut when your shares bring people in.",
 };
 
 export default async function PricingPage() {
@@ -29,79 +30,146 @@ export default async function PricingPage() {
       {/* Hero */}
       <section className="bg-grid">
         <div className="mx-auto max-w-4xl px-6 pt-20 pb-16 text-center">
-          <p className="text-caption uppercase tracking-[0.22em] text-walnut">
-            Pricing
-          </p>
-          <h1 className="mt-4 font-display-xl text-ink">
-            Free forever for DIYers.
+          <p className="font-hand-lg text-walnut">a simple deal —</p>
+          <h1 className="mt-3 font-display-xl text-ink">
+            Free to start.{" "}
+            <span className="underline-hand">$9 when you&apos;re hooked.</span>
           </h1>
           <p className="mt-6 text-lg text-graphite max-w-2xl mx-auto leading-relaxed">
-            We envision Bench free forever, with limited to no ads. DIYers
-            are trying to save money — we&apos;re not going to ask you to
-            spend more. When Bench makes money, the people using Bench
-            make money too.
+            Our vision: Bench stays free for planning. Limited to no ads,
+            ever. DIYers come here to save money — so the people using
+            Bench make money too, when they share it.
           </p>
         </div>
       </section>
 
-      {/* Single plan card */}
+      {/* Two-tier plan */}
       <section className="border-t border-hairline">
-        <div className="mx-auto max-w-3xl px-6 py-16">
-          <div className="rounded-2xl border-2 border-walnut bg-paper p-8 md:p-10 shadow-sm">
-            <div className="flex items-baseline justify-between flex-wrap gap-2">
-              <p className="text-caption uppercase tracking-[0.22em] text-walnut">
-                Every DIYer
+        <div className="mx-auto max-w-5xl px-6 py-16">
+          <div className="grid gap-6 md:grid-cols-2">
+            {/* FREE */}
+            <div className="rounded-2xl border border-hairline bg-paper p-8 md:p-10 flex flex-col">
+              <div className="flex items-baseline justify-between flex-wrap gap-2">
+                <p className="text-caption uppercase tracking-[0.22em] text-walnut">
+                  Bench Free
+                </p>
+                <p className="font-hand text-xl text-moss-dark">always free</p>
+              </div>
+              <p className="mt-4 font-display-xl text-ink">
+                $0<span className="text-graphite text-2xl">/forever</span>
               </p>
-              <p className="text-sm font-semibold text-moss-dark">
-                Free — and always will be
+              <p className="mt-3 text-graphite">
+                Everything a DIYer needs to plan + execute a project or two.
               </p>
+              <ul className="mt-6 space-y-2.5 flex-1">
+                {[
+                  "Up to 3 active projects",
+                  "All AI features — intake, plan drafts, revisions",
+                  "Permits + inspection milestones (US)",
+                  "Shopping list with lead-time tracking",
+                  "Toolbox as source of truth",
+                  "Sub-project linking",
+                  "Referral program — earn 15% lifetime on what your referrals pay",
+                ].map((f) => (
+                  <li key={f} className="flex items-start gap-2.5">
+                    <Check
+                      size={16}
+                      weight="bold"
+                      className="text-moss-dark shrink-0 mt-1"
+                    />
+                    <span className="text-sm text-ink leading-relaxed">
+                      {f}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+              <div className="mt-8 pt-6 border-t border-hairline">
+                <BetaSignupForm
+                  source="pricing-free"
+                  cta="Start free"
+                  roleInterest="diyer"
+                />
+              </div>
             </div>
-            <p className="mt-4 font-display-xl text-ink">
-              $0<span className="text-graphite text-2xl">/forever</span>
-            </p>
-            <ul className="mt-8 space-y-3">
-              {[
-                "Unlimited projects, stages, steps",
-                "Unlimited AI intake interviews + plan drafts",
-                "Permit + inspection milestones (US)",
-                "Shopping list with lead-time tracking",
-                "Your toolbox as source of truth",
-                "Sub-project linking + parent rollups",
-                "Auto-enrolled in the referral program (see below)",
-                "Shape the product through direct feedback",
-              ].map((feature) => (
-                <li key={feature} className="flex items-start gap-3">
-                  <Check
-                    size={18}
-                    weight="bold"
-                    className="text-moss-dark shrink-0 mt-0.5"
-                  />
-                  <span className="text-ink">{feature}</span>
-                </li>
-              ))}
-            </ul>
-            <div className="mt-10">
-              <BetaSignupForm source="pricing-hero" cta="Get beta access" roleInterest="diyer" />
+
+            {/* PRO */}
+            <div className="relative rounded-2xl border-2 border-walnut bg-paper p-8 md:p-10 flex flex-col shadow-sm">
+              <StampBadge className="absolute -top-4 -right-4 !w-20 !h-20 !text-sm bg-walnut text-white border-walnut">
+                worth it
+              </StampBadge>
+              <div className="flex items-baseline justify-between flex-wrap gap-2">
+                <p className="text-caption uppercase tracking-[0.22em] text-walnut">
+                  Bench Pro
+                </p>
+                <p className="font-hand text-xl text-walnut">for real builders</p>
+              </div>
+              <p className="mt-4 font-display-xl text-ink">
+                $9<span className="text-graphite text-2xl">/mo</span>
+              </p>
+              <p className="mt-1 text-sm text-graphite">
+                or $90/year — save 17%
+              </p>
+              <p className="mt-3 text-graphite">
+                Unlimited projects, faster AI, bigger referral cut.
+              </p>
+              <ul className="mt-6 space-y-2.5 flex-1">
+                {[
+                  "Unlimited active projects",
+                  "Priority AI — faster intake + plan drafts",
+                  "Advanced analytics (time tracking, budget variance, what-worked)",
+                  "Early access to new features",
+                  "Higher referral cut — 25% lifetime (vs 15% on Free)",
+                  "All Free features, unlocked",
+                ].map((f) => (
+                  <li key={f} className="flex items-start gap-2.5">
+                    <Check
+                      size={16}
+                      weight="bold"
+                      className="text-walnut shrink-0 mt-1"
+                    />
+                    <span className="text-sm text-ink leading-relaxed">
+                      {f}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+              <div className="mt-8 pt-6 border-t border-hairline">
+                <BetaSignupForm
+                  source="pricing-pro"
+                  cta="Get early Pro access"
+                  roleInterest="diyer"
+                />
+              </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* The deal: we pay YOU back */}
+      {/* We pay YOU back */}
       <section className="border-t border-hairline bg-ivory">
         <div className="mx-auto max-w-4xl px-6 py-20">
-          <p className="text-caption uppercase tracking-[0.22em] text-walnut">
-            How we make money — and share it
-          </p>
-          <h2 className="mt-3 font-display-lg text-ink max-w-3xl">
-            Bench makes money when you do.
-          </h2>
-          <p className="mt-4 text-lg text-graphite max-w-2xl leading-relaxed">
-            We need revenue to support and build this thing. But you&apos;re
-            here to save money, not spend more. So the plan is simple: Bench
-            earns from people who find Bench <em>through you</em>, and we
-            split it.
-          </p>
+          <div className="flex items-start gap-6 flex-wrap">
+            <StampBadge>share → earn</StampBadge>
+            <div className="flex-1 min-w-[250px]">
+              <p className="text-caption uppercase tracking-[0.22em] text-walnut">
+                How we make money — and share it
+              </p>
+              <h2 className="mt-3 font-display-lg text-ink">
+                You share it, we split it.
+              </h2>
+              <p className="mt-4 text-lg text-graphite leading-relaxed">
+                Bench needs revenue to pay the AI bill, pay experts, and pay
+                people who bring others in. The pattern is simple: Pro
+                subscriptions + template sales + affiliate commissions fund
+                the whole thing. And{" "}
+                <span className="underline-hand">
+                  when someone signs up through your share link
+                </span>
+                , you earn a cut of whatever they pay Bench — for the life of
+                their account.
+              </p>
+            </div>
+          </div>
 
           <div className="mt-12 grid gap-5 md:grid-cols-2">
             <RevCard
@@ -109,15 +177,13 @@ export default async function PricingPage() {
               headline="Every user is a Brand Ambassador."
               body={
                 <>
-                  When you share a completed Bench project on social — a
-                  before/after, a finished vanity, a &quot;here&apos;s my
-                  whole plan&quot; post — the link is tagged to you. Anyone
-                  who signs up through that link earns you a share of their
-                  lifetime contribution to Bench.{" "}
+                  Every signed-up DIYer gets a share link. When someone signs
+                  up through it and eventually pays for Pro, buys a template,
+                  or clicks an affiliate product link — you get a cut. Free
+                  users earn 15% lifetime. Pro users earn 25%.{" "}
                   <strong className="text-ink">
                     20 followers or 2 million — doesn&apos;t matter.
-                  </strong>{" "}
-                  Real builds, real referrals, real cut.
+                  </strong>
                 </>
               }
               highlight
@@ -130,8 +196,7 @@ export default async function PricingPage() {
                   Template creators (&quot;Builders&quot;) publish reusable
                   component + technique templates — a Shaker vanity, a Kerdi
                   niche, a paint-the-cabinets recipe. Builders keep the
-                  majority of every clone. Bench keeps a minority. You
-                  don&apos;t need to use paid templates to plan — starting
+                  majority of every clone. Bench keeps a minority. Planning
                   from scratch is always free.
                 </>
               }
@@ -151,66 +216,69 @@ export default async function PricingPage() {
             />
             <RevCard
               Icon={Rocket}
-              headline="Pro tools for power users."
+              headline="Pro subscriptions fund the rest."
               body={
                 <>
-                  Eventually, power-creator features — bulk export, priority
-                  AI, advanced analytics — ship as an optional subscription.
-                  Small monthly fee (~$9). Never required for planning,
-                  building, or selling templates.
+                  The $9/mo Pro tier is what keeps the lights on — AI usage,
+                  infrastructure, expert payouts, your referral checks. It
+                  pays the ambassadors too. That&apos;s why the math works.
                 </>
               }
             />
           </div>
 
           <p className="mt-10 text-sm text-graphite italic">
-            When pricing shifts, we commit to 30 days&apos; notice and
-            grandfathering beta users. Referral program details (payout
-            rates, minimums, vesting) land with the public launch.
+            Referral payout rates, minimums, and vesting land with public
+            launch. Pricing changes get 30 days&apos; notice and grandfather
+            beta users.
           </p>
         </div>
       </section>
 
-      {/* The anti-pattern pledge */}
+      {/* The anti-promise */}
       <section className="border-t border-hairline">
         <div className="mx-auto max-w-3xl px-6 py-20">
-          <p className="text-caption uppercase tracking-[0.22em] text-walnut">
-            What Bench won&apos;t do
-          </p>
-          <h2 className="mt-3 font-display-lg text-ink">
-            The anti-promise.
+          <p className="font-hand-lg text-walnut">a promise —</p>
+          <h2 className="mt-2 font-display-lg text-ink">
+            Here&apos;s what Bench won&apos;t do.
           </h2>
           <ul className="mt-8 space-y-4 text-ink">
             <li className="flex items-start gap-3">
-              <span className="text-walnut mt-1">·</span>
+              <span className="font-hand text-walnut text-xl mt-0.5 leading-none">
+                ✓
+              </span>
               <span>
                 <strong>No paywall on the core planner.</strong> Intake, plan
-                drafts, stages, milestones, shopping lists, toolbox — always
-                free.
+                drafts, milestones, shopping list, toolbox — always in Free.
               </span>
             </li>
             <li className="flex items-start gap-3">
-              <span className="text-walnut mt-1">·</span>
+              <span className="font-hand text-walnut text-xl mt-0.5 leading-none">
+                ✓
+              </span>
               <span>
-                <strong>Limited to no ads.</strong> No banner ads, no
-                interstitials. If we ever show anything sponsored, it&apos;s
-                clearly marked and relevant (a material-brand &quot;this tile
-                works for that look&quot; — not cruft).
+                <strong>Limited to no ads.</strong> No banners, no
+                interstitials. If anything sponsored ever appears,
+                it&apos;s clearly labeled and relevant (a material brand
+                matched to your plan — not noise).
               </span>
             </li>
             <li className="flex items-start gap-3">
-              <span className="text-walnut mt-1">·</span>
+              <span className="font-hand text-walnut text-xl mt-0.5 leading-none">
+                ✓
+              </span>
               <span>
                 <strong>No selling your data.</strong> Ever. Your plans are
                 yours.
               </span>
             </li>
             <li className="flex items-start gap-3">
-              <span className="text-walnut mt-1">·</span>
+              <span className="font-hand text-walnut text-xl mt-0.5 leading-none">
+                ✓
+              </span>
               <span>
-                <strong>No training AI models on your projects.</strong>{" "}
-                Anthropic&apos;s API doesn&apos;t train on our traffic by
-                contract. Your plans stay your plans.
+                <strong>No training AI on your projects.</strong> Anthropic&apos;s
+                API doesn&apos;t train on our traffic by contract.
               </span>
             </li>
           </ul>
