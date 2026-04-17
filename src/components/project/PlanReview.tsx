@@ -7,12 +7,13 @@ import {
   FiChevronRight,
   FiClock,
   FiCheck,
-  FiX,
   FiLoader,
   FiFlag,
   FiFileText,
   FiTruck,
   FiCheckSquare,
+  FiEdit3,
+  FiRefreshCw,
 } from "react-icons/fi";
 
 export interface PreviewStep {
@@ -48,6 +49,8 @@ interface PlanReviewProps {
   projectId: string;
   preview: PlanPreview;
   onCancel: () => void;
+  /** Called when a revised plan comes back; parent swaps in the new preview. */
+  onReplacePreview: (next: PlanPreview) => void;
 }
 
 const KIND_ICON: Record<string, typeof FiFlag> = {
@@ -68,6 +71,7 @@ export default function PlanReview({
   projectId,
   preview,
   onCancel,
+  onReplacePreview,
 }: PlanReviewProps) {
   const router = useRouter();
   const [acceptedStages, setAcceptedStages] = useState<Set<number>>(
@@ -80,6 +84,9 @@ export default function PlanReview({
   const [expanded, setExpanded] = useState<Set<number>>(new Set([0]));
   const [committing, setCommitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [feedback, setFeedback] = useState("");
+  const [revising, setRevising] = useState(false);
+  const [feedbackOpen, setFeedbackOpen] = useState(false);
 
   const toggleStage = (i: number) => {
     setAcceptedStages((prev) => {
@@ -108,6 +115,35 @@ export default function PlanReview({
   const expandAll = () =>
     setExpanded(new Set(preview.stages.map((_, i) => i)));
   const collapseAll = () => setExpanded(new Set());
+
+  async function handleRevise() {
+    if (!feedback.trim()) return;
+    setRevising(true);
+    setError(null);
+    try {
+      const res = await fetch("/api/ai/draft-plan/revise", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          projectId,
+          plan: preview,
+          feedback: feedback.trim(),
+        }),
+      });
+      if (!res.ok) {
+        const j = await res.json().catch(() => ({}));
+        throw new Error(j.error || "Revise failed.");
+      }
+      const data = await res.json();
+      onReplacePreview(data.plan as PlanPreview);
+      setFeedback("");
+      setFeedbackOpen(false);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Revise failed.");
+    } finally {
+      setRevising(false);
+    }
+  }
 
   async function handleCommit() {
     setCommitting(true);
@@ -381,6 +417,61 @@ export default function PlanReview({
         </div>
       )}
 
+      {/* Refine / feedback box */}
+      <div className="rounded-2xl bg-cream border border-border-warm p-4 space-y-2">
+        <button
+          onClick={() => setFeedbackOpen((v) => !v)}
+          className="inline-flex items-center gap-2 text-sm font-semibold text-charcoal"
+        >
+          <FiEdit3 className="h-4 w-4" />
+          Suggest changes or ask for more detail
+          {feedbackOpen ? (
+            <FiChevronDown className="h-4 w-4" />
+          ) : (
+            <FiChevronRight className="h-4 w-4" />
+          )}
+        </button>
+        {feedbackOpen && (
+          <>
+            <p className="text-[11px] text-warm-gray">
+              Natural language. Examples: &ldquo;Remove the test &amp; protect
+              stage, already did it.&rdquo; · &ldquo;Break tile into two
+              stages.&rdquo; · &ldquo;Add a stage for building the
+              vanity.&rdquo; · &ldquo;More detail on plumbing rough-in.&rdquo;
+            </p>
+            <textarea
+              value={feedback}
+              onChange={(e) => setFeedback(e.target.value)}
+              rows={3}
+              placeholder="What would you change?"
+              className="w-full rounded-lg border border-border-warm bg-white px-3 py-2 text-sm focus:outline-none focus:border-terracotta"
+            />
+            <div className="flex items-center gap-2">
+              <button
+                onClick={handleRevise}
+                disabled={revising || !feedback.trim()}
+                className="inline-flex items-center gap-1.5 rounded-lg bg-terracotta hover:bg-terracotta-dark text-white text-sm font-semibold px-3 py-1.5 transition-colors disabled:opacity-50"
+              >
+                {revising ? (
+                  <>
+                    <FiLoader className="h-4 w-4 animate-spin" />
+                    Revising…
+                  </>
+                ) : (
+                  <>
+                    <FiRefreshCw className="h-4 w-4" />
+                    Revise plan
+                  </>
+                )}
+              </button>
+              <span className="text-[11px] text-warm-gray">
+                Your accept/reject selections reset after a revise.
+              </span>
+            </div>
+          </>
+        )}
+      </div>
+
       {/* Footer actions */}
       {error && (
         <div className="rounded-lg bg-red-50 border border-red-200 p-3 text-xs text-red-700">
@@ -409,9 +500,9 @@ export default function PlanReview({
         <button
           onClick={onCancel}
           disabled={committing}
-          className="inline-flex items-center gap-1 rounded-lg text-sm text-warm-gray hover:text-charcoal px-3 py-2"
+          className="ml-auto inline-flex items-center gap-1 rounded-lg text-xs text-warm-gray hover:text-charcoal px-2 py-1"
+          title="Bail back to the intake chat"
         >
-          <FiX className="h-4 w-4" />
           Back to intake
         </button>
       </div>

@@ -233,6 +233,7 @@ export function IntakeChat({
           projectId={projectId}
           preview={preview}
           onCancel={() => setPreview(null)}
+          onReplacePreview={(next) => setPreview(next)}
         />
       </div>
     );
