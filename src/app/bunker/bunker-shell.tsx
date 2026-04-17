@@ -3,19 +3,24 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
-  FiHome,
-  FiTool,
-  FiLogOut,
-  FiMenu,
-  FiX,
-  FiSettings,
-} from "react-icons/fi";
+  House,
+  Toolbox,
+  UserCircle,
+  SignOut,
+  List,
+  X,
+} from "@phosphor-icons/react/dist/ssr";
 import { useState } from "react";
 
+/*
+  Icons are Phosphor (weight "duotone" default for a softer editorial feel).
+  Swapped from Feather in 2026-04-18 per Codi's "cuter icons" request —
+  wrench + gear felt too technical.
+*/
 const navItems = [
-  { href: "/bunker", label: "Projects", icon: FiHome },
-  { href: "/bunker/toolbox", label: "My Toolbox", icon: FiTool },
-  { href: "/bunker/preferences", label: "Preferences", icon: FiSettings },
+  { href: "/bunker", label: "Projects", icon: House },
+  { href: "/bunker/toolbox", label: "My Toolbox", icon: Toolbox },
+  { href: "/bunker/account", label: "Account", icon: UserCircle },
 ];
 
 export function BunkerShell({
@@ -31,24 +36,28 @@ export function BunkerShell({
   return (
     <div className="flex h-screen bg-paper">
       {/* Sidebar — desktop */}
-      <aside className="hidden w-64 flex-col border-r border-border-warm bg-white md:flex">
-        <div className="flex h-16 items-center border-b border-slate-100 px-6">
-          <span className="text-lg font-bold text-sage-dark">Bench</span>
+      <aside className="hidden w-64 flex-col border-r border-hairline bg-paper md:flex">
+        <div className="flex h-16 items-center border-b border-hairline px-6">
+          <span className="font-display text-xl text-ink">Bench</span>
         </div>
         <nav className="flex-1 space-y-1 px-3 py-4">
           {navItems.map((item) => {
             const active = pathname === item.href;
+            const Icon = item.icon;
             return (
               <Link
                 key={item.href}
                 href={item.href}
-                className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${
+                className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-semibold transition-colors ${
                   active
-                    ? "bg-sage/10 text-sage-dark"
-                    : "text-warm-gray hover:bg-cream hover:text-charcoal"
+                    ? "bg-walnut/10 text-walnut"
+                    : "text-graphite hover:bg-ivory hover:text-ink"
                 }`}
               >
-                <item.icon className="h-5 w-5" />
+                <Icon
+                  size={20}
+                  weight={active ? "duotone" : "regular"}
+                />
                 {item.label}
               </Link>
             );
@@ -66,34 +75,38 @@ export function BunkerShell({
 
       {/* Mobile sidebar */}
       <aside
-        className={`fixed inset-y-0 left-0 z-50 w-64 transform border-r border-border-warm bg-white transition-transform md:hidden ${
+        className={`fixed inset-y-0 left-0 z-50 w-64 transform border-r border-hairline bg-paper transition-transform md:hidden ${
           sidebarOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
-        <div className="flex h-16 items-center justify-between border-b border-slate-100 px-6">
-          <span className="text-lg font-bold text-sage-dark">Bench</span>
+        <div className="flex h-16 items-center justify-between border-b border-hairline px-6">
+          <span className="font-display text-xl text-ink">Bench</span>
           <button
             onClick={() => setSidebarOpen(false)}
-            className="text-warm-gray hover:text-warm-gray"
+            className="text-graphite hover:text-ink"
           >
-            <FiX className="h-5 w-5" />
+            <X size={20} />
           </button>
         </div>
         <nav className="space-y-1 px-3 py-4">
           {navItems.map((item) => {
             const active = pathname === item.href;
+            const Icon = item.icon;
             return (
               <Link
                 key={item.href}
                 href={item.href}
                 onClick={() => setSidebarOpen(false)}
-                className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${
+                className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-semibold transition-colors ${
                   active
-                    ? "bg-sage/10 text-sage-dark"
-                    : "text-warm-gray hover:bg-cream hover:text-charcoal"
+                    ? "bg-walnut/10 text-walnut"
+                    : "text-graphite hover:bg-ivory hover:text-ink"
                 }`}
               >
-                <item.icon className="h-5 w-5" />
+                <Icon
+                  size={20}
+                  weight={active ? "duotone" : "regular"}
+                />
                 {item.label}
               </Link>
             );
@@ -104,26 +117,26 @@ export function BunkerShell({
       {/* Main content */}
       <div className="flex flex-1 flex-col overflow-hidden">
         {/* Top bar */}
-        <header className="flex h-16 items-center justify-between border-b border-border-warm bg-white px-4 md:px-6">
+        <header className="flex h-16 items-center justify-between border-b border-hairline bg-paper px-4 md:px-6">
           <button
             onClick={() => setSidebarOpen(true)}
-            className="text-warm-gray hover:text-charcoal md:hidden"
+            className="text-graphite hover:text-ink md:hidden"
           >
-            <FiMenu className="h-5 w-5" />
+            <List size={20} />
           </button>
 
           <div className="hidden md:block" />
 
           <div className="flex items-center gap-4">
-            <span className="text-sm font-medium text-charcoal">
+            <span className="text-sm font-semibold text-ink">
               {displayName}
             </span>
             <form action="/auth/logout" method="POST">
               <button
                 type="submit"
-                className="flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm text-warm-gray transition-colors hover:bg-cream hover:text-charcoal"
+                className="flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm text-graphite transition-colors hover:bg-ivory hover:text-ink"
               >
-                <FiLogOut className="h-4 w-4" />
+                <SignOut size={16} />
                 <span className="hidden sm:inline">Log out</span>
               </button>
             </form>
@@ -136,20 +149,22 @@ export function BunkerShell({
         </main>
 
         {/* Mobile bottom navigation */}
-        <nav className="flex border-t border-border-warm bg-white md:hidden">
+        <nav className="flex border-t border-hairline bg-paper md:hidden">
           {navItems.map((item) => {
             const active = pathname === item.href;
+            const Icon = item.icon;
             return (
               <Link
                 key={item.href}
                 href={item.href}
-                className={`flex flex-1 flex-col items-center gap-1 py-3 text-xs font-medium transition-colors ${
-                  active
-                    ? "text-sage"
-                    : "text-warm-gray hover:text-warm-gray"
+                className={`flex flex-1 flex-col items-center gap-1 py-3 text-xs font-semibold transition-colors ${
+                  active ? "text-walnut" : "text-graphite hover:text-ink"
                 }`}
               >
-                <item.icon className="h-5 w-5" />
+                <Icon
+                  size={20}
+                  weight={active ? "duotone" : "regular"}
+                />
                 {item.label}
               </Link>
             );

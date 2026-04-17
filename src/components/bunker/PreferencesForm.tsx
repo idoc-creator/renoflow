@@ -4,6 +4,8 @@ import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 
 interface Preferences {
+  display_name: string;
+  email: string;
   ahj_city: string;
   ahj_county: string;
   ahj_state: string;
@@ -12,7 +14,13 @@ interface Preferences {
   is_primary_residence: boolean | null;
 }
 
-export function PreferencesForm({ initial }: { initial: Preferences }) {
+export function PreferencesForm({
+  initial,
+  userEmail,
+}: {
+  initial: Preferences;
+  userEmail: string;
+}) {
   const [prefs, setPrefs] = useState<Preferences>(initial);
   const [saving, setSaving] = useState(false);
   const [savedAt, setSavedAt] = useState<number | null>(null);
@@ -37,6 +45,7 @@ export function PreferencesForm({ initial }: { initial: Preferences }) {
     const { error: upErr } = await supabase
       .from("profiles")
       .update({
+        display_name: prefs.display_name.trim() || null,
         default_ahj_city: prefs.ahj_city.trim() || null,
         default_ahj_county: prefs.ahj_county.trim() || null,
         default_ahj_state: prefs.ahj_state.trim().toUpperCase() || null,
@@ -54,18 +63,38 @@ export function PreferencesForm({ initial }: { initial: Preferences }) {
   }
 
   const input =
-    "w-full px-4 py-2 bg-cream rounded-lg border border-border-warm text-sm focus:outline-none focus:border-terracotta";
+    "w-full px-4 py-2 bg-paper rounded-lg border border-hairline text-sm text-ink focus:outline-none focus:border-walnut transition-colors";
 
   return (
     <form onSubmit={handleSave} className="space-y-6">
-      <section className="rounded-2xl bg-white border border-border-warm p-6 space-y-4">
-        <h2 className="font-serif text-lg text-charcoal">
-          Default location (AHJ)
-        </h2>
-        <p className="text-xs text-warm-gray">
-          Your authority-having-jurisdiction — city, county, state, country.
-          We&apos;ll use this for permits + code on new projects and only ask
-          again if the project is somewhere else.
+      <Section label="Profile">
+        <Field label="Display name">
+          <input
+            type="text"
+            value={prefs.display_name}
+            onChange={(e) => update("display_name", e.target.value)}
+            className={input}
+            placeholder="What should we call you?"
+          />
+        </Field>
+        <Field label="Email">
+          <input
+            type="email"
+            value={userEmail}
+            disabled
+            className={`${input} cursor-not-allowed opacity-70`}
+          />
+          <p className="mt-1 text-[11px] text-graphite">
+            Email is linked to your sign-in. Contact support to change it.
+          </p>
+        </Field>
+      </Section>
+
+      <Section label="Location defaults">
+        <p className="text-xs text-graphite">
+          Your default jurisdiction for permits + code. We&apos;ll use this
+          automatically on new projects and only ask again if a project is
+          somewhere else.
         </p>
         <div className="grid grid-cols-2 gap-3">
           <Field label="City">
@@ -112,16 +141,15 @@ export function PreferencesForm({ initial }: { initial: Preferences }) {
           </Field>
         </div>
         {prefs.ahj_country !== "US" && (
-          <p className="rounded-lg bg-amber-50 border border-amber-200 p-2 text-[11px] text-amber-800">
+          <p className="rounded-lg bg-honey/15 border border-hairline p-2 text-[11px] text-ink">
             Heads up: Bench only has permitting knowledge for the US right now.
-            You&apos;ll still get plans, we just won&apos;t auto-seed permit
+            You&apos;ll still get plans; we just won&apos;t auto-seed permit
             milestones.
           </p>
         )}
-      </section>
+      </Section>
 
-      <section className="rounded-2xl bg-white border border-border-warm p-6 space-y-4">
-        <h2 className="font-serif text-lg text-charcoal">Currency</h2>
+      <Section label="Currency">
         <Field label="Default currency">
           <select
             value={prefs.currency}
@@ -136,11 +164,10 @@ export function PreferencesForm({ initial }: { initial: Preferences }) {
             <option value="NZD">New Zealand Dollar (NZD)</option>
           </select>
         </Field>
-      </section>
+      </Section>
 
-      <section className="rounded-2xl bg-white border border-border-warm p-6 space-y-4">
-        <h2 className="font-serif text-lg text-charcoal">Residence status</h2>
-        <p className="text-xs text-warm-gray">
+      <Section label="Residence status">
+        <p className="text-xs text-graphite">
           Most US states let homeowners pull permits on their own primary
           residence. Setting this once saves a question per project.
         </p>
@@ -154,20 +181,20 @@ export function PreferencesForm({ initial }: { initial: Preferences }) {
               type="button"
               key={String(opt.value)}
               onClick={() => update("is_primary_residence", opt.value)}
-              className={`rounded-lg border px-3 py-1.5 text-xs font-medium transition-colors ${
+              className={`rounded-lg border px-3 py-1.5 text-xs font-semibold transition-colors ${
                 prefs.is_primary_residence === opt.value
-                  ? "bg-terracotta text-white border-terracotta"
-                  : "bg-white border-border-warm text-charcoal hover:border-terracotta"
+                  ? "bg-walnut text-white border-walnut"
+                  : "bg-paper border-hairline text-ink hover:border-walnut"
               }`}
             >
               {opt.label}
             </button>
           ))}
         </div>
-      </section>
+      </Section>
 
       {error && (
-        <div className="rounded-lg bg-red-50 border border-red-200 p-3 text-xs text-red-700">
+        <div className="rounded-lg bg-oxblood/10 border border-oxblood/30 p-3 text-xs text-oxblood">
           {error}
         </div>
       )}
@@ -176,15 +203,33 @@ export function PreferencesForm({ initial }: { initial: Preferences }) {
         <button
           type="submit"
           disabled={saving}
-          className="rounded-lg bg-terracotta hover:bg-terracotta-dark text-white font-semibold text-sm px-4 py-2 transition-colors disabled:opacity-50"
+          className="rounded-lg bg-walnut hover:bg-walnut-dark text-white font-semibold text-sm px-5 py-2.5 transition-colors disabled:opacity-50"
         >
-          {saving ? "Saving…" : "Save preferences"}
+          {saving ? "Saving…" : "Save changes"}
         </button>
         {savedAt && !saving && (
-          <span className="text-xs text-warm-gray">Saved.</span>
+          <span className="text-xs text-graphite">Saved.</span>
         )}
       </div>
     </form>
+  );
+}
+
+/** Section wrapper with an all-caps editorial label */
+function Section({
+  label,
+  children,
+}: {
+  label: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <section className="rounded-2xl bg-paper border border-hairline p-6 space-y-3">
+      <p className="text-caption uppercase tracking-[0.18em] text-walnut">
+        {label}
+      </p>
+      {children}
+    </section>
   );
 }
 
@@ -197,7 +242,7 @@ function Field({
 }) {
   return (
     <label className="block">
-      <span className="block text-xs font-semibold uppercase tracking-wide text-warm-gray mb-1">
+      <span className="block text-xs font-semibold text-ink mb-1">
         {label}
       </span>
       {children}

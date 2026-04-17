@@ -28,20 +28,15 @@ export function SavingsDashboard({
 
   return (
     <div className="space-y-4">
-      <div className="flex items-baseline justify-between gap-3 flex-wrap">
-        <h2 className="text-sm font-semibold uppercase tracking-wide text-warm-gray">
-          Savings Dashboard
-        </h2>
-        {diyEstimate > 0 && (
-          <p className="text-[11px] text-warm-gray">
-            Includes {contingencyPct}% contingency (
-            <span className="font-semibold text-charcoal">
-              ${contingencyAmount.toLocaleString()}
-            </span>
-            )
-          </p>
-        )}
-      </div>
+      {diyEstimate > 0 && (
+        <p className="text-[11px] text-graphite">
+          Includes {contingencyPct}% contingency (
+          <span className="font-semibold text-ink">
+            ${contingencyAmount.toLocaleString()}
+          </span>
+          )
+        </p>
+      )}
 
       <div className="grid grid-cols-2 gap-3">
         {/* Saved by DIYing */}

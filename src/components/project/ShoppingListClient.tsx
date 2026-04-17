@@ -182,9 +182,8 @@ export function ShoppingListClient({
 
   return (
     <div className="pb-8">
-      {/* Header */}
-      <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
-        <h2 className="text-lg font-semibold text-charcoal">Shopping List</h2>
+      {/* Header — title comes from the outer page section, we just render actions */}
+      <div className="mb-6 flex flex-wrap items-center justify-end gap-3">
         <div className="flex gap-2">
           {items.length === 0 && (
             <button

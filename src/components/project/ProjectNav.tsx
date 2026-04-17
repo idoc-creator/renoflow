@@ -3,23 +3,23 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
-  FiGrid,
-  FiClipboard,
-  FiImage,
-  FiDollarSign,
-  FiCamera,
-} from "react-icons/fi";
+  SquaresFour,
+  ClipboardText,
+  Images,
+  CurrencyCircleDollar,
+  Camera,
+} from "@phosphor-icons/react/dist/ssr";
 
 interface ProjectNavProps {
   projectId: string;
 }
 
 const tabs = [
-  { key: "overview", label: "Overview", icon: FiGrid, href: "" },
-  { key: "plan", label: "Plan", icon: FiClipboard, href: "/plan" },
-  { key: "mood-board", label: "Mood Board", icon: FiImage, href: "/mood-board" },
-  { key: "budget", label: "Budget", icon: FiDollarSign, href: "/budget" },
-  { key: "photos", label: "Photos", icon: FiCamera, href: "/photos" },
+  { key: "overview", label: "Overview", icon: SquaresFour, href: "" },
+  { key: "plan", label: "Plan", icon: ClipboardText, href: "/plan" },
+  { key: "mood-board", label: "Mood Board", icon: Images, href: "/mood-board" },
+  { key: "budget", label: "Budget", icon: CurrencyCircleDollar, href: "/budget" },
+  { key: "photos", label: "Photos", icon: Camera, href: "/photos" },
 ];
 
 export function ProjectNav({ projectId }: ProjectNavProps) {
@@ -34,21 +34,27 @@ export function ProjectNav({ projectId }: ProjectNavProps) {
   }
 
   return (
-    <nav className="flex gap-1 rounded-lg bg-cream p-1 overflow-x-auto">
+    <nav className="flex gap-1 border-b border-hairline overflow-x-auto">
       {tabs.map((tab) => {
         const active = isActive(tab);
+        const Icon = tab.icon;
         return (
           <Link
             key={tab.key}
             href={`${base}${tab.href}`}
-            className={`flex items-center gap-1.5 rounded-md px-3 py-2 text-sm font-medium transition-colors whitespace-nowrap ${
-              active
-                ? "bg-white text-sage-dark shadow-sm"
-                : "text-warm-gray hover:text-charcoal"
+            className={`relative flex items-center gap-1.5 px-3 py-2.5 text-sm font-semibold transition-colors whitespace-nowrap ${
+              active ? "text-walnut" : "text-graphite hover:text-ink"
             }`}
           >
-            <tab.icon className="h-4 w-4" />
+            <Icon
+              size={16}
+              weight={active ? "duotone" : "regular"}
+            />
             <span className="hidden sm:inline">{tab.label}</span>
+            {/* Editorial underline on active tab */}
+            {active && (
+              <span className="absolute inset-x-3 -bottom-px h-0.5 bg-walnut" />
+            )}
           </Link>
         );
       })}

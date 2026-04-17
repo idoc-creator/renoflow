@@ -40,11 +40,11 @@ export default async function BudgetPage({
     stages?.reduce((sum, s) => sum + (Number(s.actual_cost) || 0), 0) ?? 0;
 
   return (
-    <div className="space-y-8">
-      <section>
-        <h2 className="font-serif text-xl text-charcoal mb-3">
+    <div className="space-y-10">
+      <section className="space-y-3">
+        <p className="text-caption uppercase tracking-[0.18em] text-walnut">
           Savings & Budget
-        </h2>
+        </p>
         <SavingsDashboard
           contractorEstimate={Number(project.contractor_estimate) || 0}
           diyEstimate={Number(project.diy_estimate) || 0}
@@ -55,10 +55,10 @@ export default async function BudgetPage({
         />
       </section>
 
-      <section>
-        <h2 className="font-serif text-xl text-charcoal mb-3">
-          Shopping list
-        </h2>
+      <section className="space-y-3">
+        <p className="text-caption uppercase tracking-[0.18em] text-walnut">
+          Shopping List
+        </p>
         <ShoppingListClient
           projectId={id}
           stages={stages ?? []}

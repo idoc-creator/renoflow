@@ -115,9 +115,14 @@ export default async function BunkerPage() {
 
   return (
     <div>
-      {/* Header */}
-      <div className="mb-6 flex items-center justify-between">
-        <h1 className="font-serif text-3xl text-charcoal">Your Bunker</h1>
+      {/* Header — editorial treatment with a caps-label kicker */}
+      <div className="mb-6 flex items-start justify-between gap-4">
+        <div>
+          <p className="text-caption uppercase tracking-[0.18em] text-walnut">
+            Your Bunker
+          </p>
+          <h1 className="font-display-lg text-ink mt-1">Projects</h1>
+        </div>
         <NewProjectButton />
       </div>
 
