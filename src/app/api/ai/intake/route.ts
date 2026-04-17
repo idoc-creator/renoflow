@@ -240,6 +240,13 @@ export async function POST(request: Request) {
     .neq("id", projectId)
     .limit(50);
 
+  // Toolbox inventory — so the intake can reference tools the user owns
+  // (and stop asking "what tools do you have" in the first place).
+  const { data: toolbox } = await supabase
+    .from("toolbox_items")
+    .select("id, name, category")
+    .eq("user_id", user.id);
+
   // No API key? Fall back to the scripted mock so the UX can be tested
   // end-to-end without configuration.
   if (!client) {
@@ -305,6 +312,9 @@ ${JSON.stringify(profileDefaults ?? {}, null, 2)}
 
 OTHER PROJECTS OWNED BY THIS USER (for suggested_parent_link detection — if the user references one during this project's intake, surface it):
 ${JSON.stringify((otherProjects ?? []).map((p) => ({ id: p.id, name: p.name })), null, 2)}
+
+USER TOOLBOX INVENTORY (tools they already own — never ask them to list their tools; plan-time will mark new tools with need_to_buy=true):
+${JSON.stringify((toolbox ?? []).map((t) => ({ name: t.name, category: t.category })), null, 2)}
 
 If the chat messages below are empty, this is the FIRST turn — kick off the interview with a warm opener that references the project name and asks the most useful first question (typically: "tell me what you're building and why" in your own words).`;
 

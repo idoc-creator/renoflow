@@ -230,8 +230,13 @@ const CARDS: QCard[] = [
         patch.primary_motivation = "learn skills";
       else if (/can'?t find|couldn'?t find|custom|exactly what/.test(s))
         patch.primary_motivation = "can't find what i want";
-      const renoType = detectRenoType(reply, {});
-      if (renoType) patch.specifics = { reno_type: renoType };
+      // Only plant reno_type if the project IS a renovation.
+      // Previously this fired on any mention of "bathroom" and mis-flagged
+      // furniture projects ("vanity for my bathroom") as bathroom renos.
+      if (cat === "renovation") {
+        const renoType = detectRenoType(reply, {});
+        if (renoType) patch.specifics = { reno_type: renoType };
+      }
       return { patch, understood: reply.trim().length > 0 };
     },
   },
@@ -660,7 +665,9 @@ const CARDS: QCard[] = [
   {
     id: "keep_tub",
     priority: 45,
-    appliesWhen: (intake) => specificsGet(intake, "reno_type") === "bathroom",
+    appliesWhen: (intake) =>
+      intake.category === "renovation" &&
+      specificsGet(intake, "reno_type") === "bathroom",
     isAnswered: (intake) => specificsGet(intake, "keep_tub") !== undefined,
     ask: () => ({
       text:
@@ -691,6 +698,7 @@ const CARDS: QCard[] = [
     id: "walls_type",
     priority: 46,
     appliesWhen: (intake) =>
+      intake.category === "renovation" &&
       specificsGet(intake, "reno_type") === "bathroom" &&
       !specificsGet(intake, "walls_type"),
     isAnswered: (intake) => !!specificsGet(intake, "walls_type"),
@@ -719,7 +727,9 @@ const CARDS: QCard[] = [
   {
     id: "backup_bathroom",
     priority: 47,
-    appliesWhen: (intake) => specificsGet(intake, "reno_type") === "bathroom",
+    appliesWhen: (intake) =>
+      intake.category === "renovation" &&
+      specificsGet(intake, "reno_type") === "bathroom",
     isAnswered: (intake) =>
       specificsGet(intake, "has_backup_bathroom") !== undefined,
     ask: () => ({
@@ -751,7 +761,9 @@ const CARDS: QCard[] = [
   {
     id: "keep_cabinets",
     priority: 45,
-    appliesWhen: (intake) => specificsGet(intake, "reno_type") === "kitchen",
+    appliesWhen: (intake) =>
+      intake.category === "renovation" &&
+      specificsGet(intake, "reno_type") === "kitchen",
     isAnswered: (intake) => specificsGet(intake, "keep_cabinets") !== undefined,
     ask: () => ({
       text: "Cabinets — keeping, refacing, or replacing?",
@@ -795,20 +807,33 @@ const CARDS: QCard[] = [
     },
   },
 
+  // Design status — only for furniture. Do you have plans already or do we
+  // need to design it? (We pull your tool inventory from the toolbox, no need
+  // to ask you to list them.)
   {
-    id: "tools_available",
+    id: "design_status",
     priority: 51,
-    appliesWhen: (intake) =>
-      intake.category === "furniture" || intake.category === "craft",
-    isAnswered: (intake) => !!specificsGet(intake, "tools_available"),
+    appliesWhen: (intake) => intake.category === "furniture",
+    isAnswered: (intake) => !!specificsGet(intake, "design_status"),
     ask: () => ({
       text:
-        "What tools do you already have that matter for this? (Miter saw, drill, sewing machine, pottery wheel — whatever applies.)",
+        "Do you already have plans for this piece, or are we designing it from scratch? (If you have plans, we can skip the design stage and go straight to sourcing.)",
+      options: [
+        { label: "I have plans (purchased/downloaded)", value: "has_plans" },
+        { label: "Rough idea — help me shape it", value: "rough_idea" },
+        { label: "Designing from scratch", value: "designing" },
+      ],
     }),
     capture: (reply, intake) => {
-      if (!reply.trim()) return { patch: {}, understood: false };
+      const s = lower(reply);
       const specifics = { ...((intake.specifics as Record<string, unknown>) || {}) };
-      specifics.tools_available = reply.trim();
+      if (/has_plans|have plans|purchased|downloaded|bought|saved/.test(s))
+        specifics.design_status = "has_plans";
+      else if (/rough|help.*shape|some idea/.test(s))
+        specifics.design_status = "rough_idea";
+      else if (/design|scratch|from scratch|no plans/.test(s))
+        specifics.design_status = "designing";
+      else return { patch: {}, understood: false };
       return { patch: { specifics }, understood: true };
     },
   },

@@ -148,6 +148,13 @@ export async function POST(request: Request) {
     return Response.json({ error: "Project not found" }, { status: 404 });
   }
 
+  // Load the user's toolbox so the plan can flag which tools they own vs need to buy.
+  const { data: toolboxRows } = await supabase
+    .from("toolbox_items")
+    .select("id, name")
+    .eq("user_id", user.id);
+  const toolbox = (toolboxRows ?? []).map((t) => ({ id: t.id, name: t.name }));
+
   // Mock fallback when no API key — still honors intake + skip_permits.
   if (!client) {
     if (!useIntake) {
@@ -182,7 +189,7 @@ export async function POST(request: Request) {
       });
     }
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    await insertStagesAndSteps(supabase as any, projectId, mock);
+    await insertStagesAndSteps(supabase as any, projectId, mock, toolbox);
 
     if (
       mock.suggested_milestones.length > 0 &&
@@ -307,7 +314,7 @@ Include an empty suggested_milestones array unless permits/inspections obviously
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    await insertStagesAndSteps(supabase as any, projectId, parsed);
+    await insertStagesAndSteps(supabase as any, projectId, parsed, toolbox);
 
     // Re-fetch just-inserted stages so we can resolve blocks_stage_index → stage_id
     if (

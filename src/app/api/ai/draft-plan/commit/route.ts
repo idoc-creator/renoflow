@@ -90,11 +90,21 @@ export async function POST(request: Request) {
     );
   }
 
+  // Load toolbox so step_tools entries get need_to_buy flags set correctly
+  const { data: toolboxRows } = await supabase
+    .from("toolbox_items")
+    .select("id, name")
+    .eq("user_id", user.id);
+  const toolbox = (toolboxRows ?? []).map((t) => ({ id: t.id, name: t.name }));
+
   // Insert stages + steps
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  await insertStagesAndSteps(supabase as any, projectId, {
-    stages: keptStages,
-  });
+  await insertStagesAndSteps(
+    supabase as any,
+    projectId,
+    { stages: keptStages },
+    toolbox
+  );
 
   // Milestones — re-point blocks_stage_index
   const mAccepted = new Set(accepted_milestone_indices);

@@ -480,46 +480,114 @@ function buildFurniturePlan(
   const specifics =
     (intake.specifics as Record<string, unknown> | undefined) ?? {};
   const materials = (specifics.materials as string) || "whatever wood fits";
+  const designStatus =
+    (specifics.design_status as string | undefined) || "designing";
   const isVanity = /vanity/i.test(projectName) || /vanity/i.test(
     (intake.project_goal as string) ?? ""
   );
 
+  const designStage: Stage =
+    designStatus === "has_plans"
+      ? {
+          title: "Review plans & confirm fit",
+          description: `Verify your plans work for your space and match your hardware choices.`,
+          reason:
+            "You said you have plans already — this stage is quick: confirm dimensions fit where it'll live and make sure the hardware in the plan is available.",
+          estimated_cost: 0,
+          estimated_hours: 1,
+          steps: [
+            {
+              title: "Measure the space",
+              description: isVanity
+                ? "Confirm plan dimensions fit the opening. Note plumbing rough-in locations."
+                : "Confirm plan dimensions fit where the piece will live.",
+              skill_level: "beginner",
+              estimated_minutes: 30,
+              tools_needed: ["tape measure"],
+            },
+            {
+              title: "Check hardware + material availability",
+              description:
+                "Verify the specific hinges, slides, pulls, and wood in the plan are still available before ordering.",
+              skill_level: "beginner",
+              estimated_minutes: 30,
+              tools_needed: [],
+            },
+          ],
+        }
+      : designStatus === "rough_idea"
+      ? {
+          title: "Shape the design",
+          description: `Turn your rough idea for ${projectName} into a workable plan.`,
+          reason:
+            "Your idea needs to become dimensions and a cut list before you can source materials confidently.",
+          estimated_cost: 20,
+          estimated_hours: 2,
+          steps: [
+            {
+              title: "Measure the space",
+              description: isVanity
+                ? "Width, depth, height of the opening. Leave ~1/4\" clearance each side. Note plumbing rough-in."
+                : "Where will the piece live? Note floor irregularities, clearances.",
+              skill_level: "beginner",
+              estimated_minutes: 30,
+              tools_needed: ["tape measure", "pencil"],
+            },
+            {
+              title: "Reference pics + dimension sketch",
+              description:
+                "Find 3-5 reference pieces you like. Sketch front/side with every dimension. Pick joinery method.",
+              skill_level: "beginner",
+              estimated_minutes: 60,
+              tools_needed: ["paper", "pencil"],
+            },
+            {
+              title: "Cut list + shopping list",
+              description: `Every piece: L × W × T × qty. Board-feet in ${materials}. Add 15-20% for mistakes.`,
+              skill_level: "beginner",
+              estimated_minutes: 30,
+              tools_needed: [],
+            },
+          ],
+        }
+      : {
+          title: "Design & measure",
+          description: `Nail down dimensions, joinery choice, and hardware for ${projectName}.`,
+          reason:
+            "Paper (or SketchUp) is cheap. Wood is not. The sketch tells you exactly how many board-feet, how many fasteners, and what order to cut.",
+          estimated_cost: 40,
+          estimated_hours: 3,
+          steps: [
+            {
+              title: "Measure the space",
+              description: isVanity
+                ? "Measure the opening where the vanity goes — width, depth, height. Leave ~1/4\" clearance on each side. Note plumbing rough-in locations."
+                : "Measure where the piece will live. Note floor irregularities, clearances, outlets, trim.",
+              skill_level: "beginner",
+              estimated_minutes: 30,
+              tools_needed: ["tape measure", "pencil", "painter's tape"],
+            },
+            {
+              title: "Sketch + dimensioned drawing",
+              description:
+                "Front, side, top views with every dimension. Call out joinery (pocket screws, dominoes, dowels, dadoes). Pick hardware FIRST — drawer slides + hinges dictate case dimensions.",
+              skill_level: "beginner",
+              estimated_minutes: 90,
+              tools_needed: ["graph paper", "ruler", "pencil"],
+            },
+            {
+              title: "Cut list + shopping list",
+              description: `Every piece: L × W × T × qty. Board-feet in ${materials}. Add 15-20% for mistakes.`,
+              skill_level: "beginner",
+              estimated_minutes: 45,
+              tools_needed: [],
+            },
+          ],
+        };
+
   return {
     stages: [
-      {
-        title: "Design & measure",
-        description: `Nail down dimensions, joinery choice, and hardware for ${projectName}.`,
-        reason:
-          "Paper (or SketchUp) is cheap. Wood is not. The sketch tells you exactly how many board-feet, how many fasteners, and what order to cut.",
-        estimated_cost: 40,
-        estimated_hours: 3,
-        steps: [
-          {
-            title: "Measure the space",
-            description: isVanity
-              ? "Measure the opening where the vanity goes — width, depth, height. Leave ~1/4\" clearance on each side. Note plumbing rough-in locations for drain + supply stubs."
-              : "Measure where the piece will live. Note floor irregularities and any clearance constraints (doorways, outlets, trim).",
-            skill_level: "beginner",
-            estimated_minutes: 30,
-            tools_needed: ["tape measure", "pencil", "painter's tape"],
-          },
-          {
-            title: "Sketch + dimensioned drawing",
-            description:
-              "Front, side, top views with every dimension written out. Call out joinery (pocket screws, dominoes, dowels, dadoes). Decide on hardware BEFORE the cut list — drawer slides and hinges dictate case dimensions.",
-            skill_level: "beginner",
-            estimated_minutes: 90,
-            tools_needed: ["graph paper", "ruler", "pencil"],
-          },
-          {
-            title: "Cut list + shopping list",
-            description: `Write every piece: length × width × thickness × quantity. Figure board-feet needed in ${materials}. Add 15-20% for mistakes.`,
-            skill_level: "beginner",
-            estimated_minutes: 45,
-            tools_needed: [],
-          },
-        ],
-      },
+      designStage,
       {
         title: "Source materials",
         description: "Get the wood, hardware, and finish on hand before cutting.",
