@@ -96,7 +96,7 @@ CURRENCY: If the user's profile currency is USD (default), phrase budgets with $
 STRUCTURE OF EACH RESPONSE (JSON):
 - reply: the next question only, with its why-preamble inline. Short. DO NOT prepend the recap.
 - options: optional array of quick picks { label, value } when applicable.
-- intake_patch: ONLY fields you learned this turn.
+- intake_patch_json: a JSON-stringified object of ONLY fields you learned this turn (e.g. '{"project_goal":"...","location":{"city":"Portland"}}'). Send '{}' if nothing learned.
 - progress: { captured_count, estimated_total (5 for craft/decor, 7 for furniture, 10+ for reno), recap }
 - is_complete: true on the wrap turn.
 - detected_sub_projects: side builds mentioned this turn.
@@ -123,9 +123,10 @@ const RESPONSE_SCHEMA = {
         additionalProperties: false,
       },
     },
-    intake_patch: {
-      type: "object" as const,
-      additionalProperties: true,
+    intake_patch_json: {
+      type: "string" as const,
+      description:
+        "JSON-encoded object of ONLY the intake fields you learned this turn. Server parses this. Example: '{\"project_goal\":\"bathroom gut\",\"location\":{\"city\":\"Portland\"}}'. Send '{}' if nothing was learned.",
     },
     progress: {
       type: "object" as const,
@@ -164,7 +165,7 @@ const RESPONSE_SCHEMA = {
   },
   required: [
     "reply",
-    "intake_patch",
+    "intake_patch_json",
     "progress",
     "is_complete",
     "detected_sub_projects",
@@ -352,23 +353,37 @@ If the chat messages below are empty, this is the FIRST turn — kick off the in
 
     const parsed = JSON.parse(textBlock.text);
 
+    // Decode the JSON-stringified patch from the AI. Fall back to empty
+    // if the AI returns something malformed.
+    let intakePatch: Record<string, unknown> = {};
+    if (typeof parsed.intake_patch_json === "string" && parsed.intake_patch_json.trim()) {
+      try {
+        const decoded = JSON.parse(parsed.intake_patch_json);
+        if (decoded && typeof decoded === "object") {
+          intakePatch = decoded as Record<string, unknown>;
+        }
+      } catch {
+        console.warn("intake_patch_json was not valid JSON; ignoring this turn's patch.");
+      }
+    }
+
     // Merge the intake patch into what's stored on the project.
-    const merged = {
+    const merged: Record<string, unknown> = {
       ...(intakeSoFar ?? {}),
-      ...(parsed.intake_patch ?? {}),
+      ...intakePatch,
     };
     // Deep-merge the "specifics" and "location" sub-objects so partial updates
     // don't wipe prior fields.
     for (const key of ["specifics", "location"] as const) {
       if (
-        parsed.intake_patch?.[key] &&
-        typeof parsed.intake_patch[key] === "object" &&
+        intakePatch[key] &&
+        typeof intakePatch[key] === "object" &&
         intakeSoFar?.[key] &&
         typeof intakeSoFar[key] === "object"
       ) {
         merged[key] = {
           ...(intakeSoFar[key] as Record<string, unknown>),
-          ...(parsed.intake_patch[key] as Record<string, unknown>),
+          ...(intakePatch[key] as Record<string, unknown>),
         };
       }
     }
