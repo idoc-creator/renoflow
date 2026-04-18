@@ -1,6 +1,8 @@
 import { createClient } from "@/lib/supabase/server";
 import { notFound } from "next/navigation";
-import ProjectOverview from "@/components/project/ProjectOverview";
+import ProjectOverview, {
+  type AggregatedMaterial,
+} from "@/components/project/ProjectOverview";
 
 interface StepTool {
   name?: string;
@@ -9,9 +11,11 @@ interface StepTool {
 
 interface MaterialRow {
   name?: string;
-  quantity?: number | string;
-  unit?: string;
+  quantity?: number | string | null;
+  unit?: string | null;
+  estimated_price?: number | null;
 }
+
 
 export default async function ProjectOverviewPage({
   params,
@@ -128,8 +132,9 @@ export default async function ProjectOverviewPage({
     a.name.localeCompare(b.name)
   );
 
-  // Dedupe materials by lowercased name
-  const materialMap = new Map<string, string>();
+  // Aggregate materials: dedupe by lowercased (name + unit); sum quantity
+  // and total estimated cost when present.
+  const materialMap = new Map<string, AggregatedMaterial>();
   for (const step of allSteps) {
     const mats = Array.isArray(step.materials_needed)
       ? step.materials_needed
@@ -137,12 +142,39 @@ export default async function ProjectOverviewPage({
     for (const m of mats) {
       const name = (m?.name || "").trim();
       if (!name) continue;
-      const key = name.toLowerCase();
-      if (!materialMap.has(key)) materialMap.set(key, name);
+      const unit = (m?.unit || "").trim().toLowerCase() || null;
+      const key = `${name.toLowerCase()}::${unit ?? ""}`;
+      const qty =
+        m?.quantity != null && m.quantity !== ""
+          ? Number(m.quantity)
+          : null;
+      const price =
+        m?.estimated_price != null ? Number(m.estimated_price) : null;
+      const lineTotal = qty != null && price != null ? qty * price : null;
+      const existing = materialMap.get(key);
+      if (existing) {
+        existing.quantity =
+          existing.quantity != null || qty != null
+            ? (existing.quantity ?? 0) + (qty ?? 0)
+            : null;
+        existing.step_count += 1;
+        existing.total_estimated =
+          existing.total_estimated != null || lineTotal != null
+            ? (existing.total_estimated ?? 0) + (lineTotal ?? 0)
+            : null;
+      } else {
+        materialMap.set(key, {
+          name,
+          unit,
+          quantity: qty,
+          step_count: 1,
+          total_estimated: lineTotal,
+        });
+      }
     }
   }
   const materials = Array.from(materialMap.values()).sort((a, b) =>
-    a.localeCompare(b)
+    a.name.localeCompare(b.name)
   );
 
   return (

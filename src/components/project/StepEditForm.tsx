@@ -5,6 +5,7 @@ import { FiTool, FiChevronDown, FiChevronRight } from "react-icons/fi";
 import SubTaskList, { type SubTask } from "./SubTaskList";
 import RoughItInPreview from "./RoughItInPreview";
 import ToolPicker, { type StepTool } from "./ToolPicker";
+import MaterialPicker, { type StepMaterial } from "./MaterialPicker";
 
 export interface StepFormData {
   title: string;
@@ -13,6 +14,7 @@ export interface StepFormData {
   estimated_minutes: number;
   tools_needed: string[];
   step_tools: StepTool[];
+  materials_needed: StepMaterial[];
   sub_tasks: SubTask[];
   tips: string | null;
   depends_on_step_id: string | null;
@@ -80,6 +82,9 @@ export default function StepEditForm({
           }))
         : [])
   );
+  const [materials, setMaterials] = useState<StepMaterial[]>(
+    initial?.materials_needed ?? []
+  );
   const [advancedOpen, setAdvancedOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   const [roughItInOpen, setRoughItInOpen] = useState(false);
@@ -95,6 +100,7 @@ export default function StepEditForm({
       estimated_minutes: minutes ? parseInt(minutes, 10) : 0,
       tools_needed: stepTools.map((t) => t.name),
       step_tools: stepTools,
+      materials_needed: materials,
       sub_tasks: subTasks,
       tips,
       depends_on_step_id: dependsOnStepId,
@@ -266,6 +272,12 @@ export default function StepEditForm({
                   Tools
                 </label>
                 <ToolPicker tools={stepTools} onChange={setStepTools} />
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-charcoal mb-2">
+                  Materials
+                </label>
+                <MaterialPicker materials={materials} onChange={setMaterials} />
               </div>
               <div>
                 <label className="block text-xs font-semibold text-charcoal mb-1">

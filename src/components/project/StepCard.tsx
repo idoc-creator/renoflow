@@ -16,6 +16,8 @@ import StepEditForm, {
 import SubTaskList, { type SubTask } from "./SubTaskList";
 import ConfirmDelete from "./ConfirmDelete";
 import type { StepTool } from "./ToolPicker";
+import type { StepMaterial } from "./MaterialPicker";
+import { FiPackage } from "react-icons/fi";
 
 const skillColors: Record<string, string> = {
   beginner: "bg-green-50 text-green-700",
@@ -31,7 +33,7 @@ export interface StepData {
   skill_level: string;
   estimated_minutes: number;
   tools_needed: string[];
-  materials_needed: unknown;
+  materials_needed: StepMaterial[];
   sub_tasks: SubTask[];
   step_tools: StepTool[];
   tips: string | null;
@@ -278,6 +280,29 @@ export function StepCard({
               </div>
             </div>
           )}
+
+          {/* Material chips */}
+          {Array.isArray(step.materials_needed) &&
+            step.materials_needed.length > 0 && (
+              <div className="mt-2 flex flex-wrap gap-1">
+                {step.materials_needed.map((m, i) => (
+                  <span
+                    key={`${m.name}-${i}`}
+                    className="inline-flex items-center gap-0.5 rounded-full bg-walnut/10 text-walnut-dark px-2 py-0.5 text-[10px] font-medium"
+                  >
+                    <FiPackage className="h-2.5 w-2.5" />
+                    {m.name}
+                    {m.quantity != null && (
+                      <span className="opacity-70">
+                        {" · "}
+                        {m.quantity}
+                        {m.unit ? ` ${m.unit}` : ""}
+                      </span>
+                    )}
+                  </span>
+                ))}
+              </div>
+            )}
 
           {/* Tool chips */}
           {(step.step_tools?.length > 0 || step.tools_needed?.length > 0) && (

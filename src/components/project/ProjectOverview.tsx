@@ -11,6 +11,19 @@ import {
   FiAlertTriangle,
 } from "react-icons/fi";
 
+export interface AggregatedMaterial {
+  name: string;
+  quantity: number | null;
+  unit: string | null;
+  step_count: number;
+  total_estimated: number | null;
+}
+
+function formatQty(n: number): string {
+  // Trim trailing zero decimals: 4.00 → 4, 4.5 → 4.5
+  return Number.isInteger(n) ? String(n) : String(Number(n.toFixed(2)));
+}
+
 interface ProjectOverviewProps {
   project: {
     id: string;
@@ -29,7 +42,7 @@ interface ProjectOverviewProps {
   completedStepCount: number;
   subProjectCount?: number;
   tools?: { name: string; need_to_buy: boolean }[];
-  materials?: string[];
+  materials?: AggregatedMaterial[];
   openMilestoneCount?: number;
   overdueMilestoneCount?: number;
   nextMilestone?: { title: string; kind: string; due_date: string | null } | null;
@@ -271,21 +284,31 @@ export default function ProjectOverview({
                 Materials you add to steps will show up here.
               </p>
             ) : (
-              <div className="flex flex-wrap gap-1.5">
-                {materials.slice(0, 30).map((m) => (
-                  <span
-                    key={m}
-                    className="inline-flex items-center gap-1 rounded-full bg-cream px-2 py-0.5 text-[11px] font-medium text-charcoal"
+              <ul className="divide-y divide-border-warm">
+                {materials.slice(0, 12).map((m) => (
+                  <li
+                    key={`${m.name}-${m.unit ?? ""}`}
+                    className="flex items-center justify-between gap-2 py-1.5 text-sm"
                   >
-                    {m}
-                  </span>
+                    <span className="text-charcoal truncate">{m.name}</span>
+                    <span className="shrink-0 text-[11px] text-warm-gray tabular-nums">
+                      {m.quantity != null
+                        ? `${formatQty(m.quantity)}${m.unit ? ` ${m.unit}` : ""}`
+                        : m.unit || "—"}
+                      {m.total_estimated != null && (
+                        <span className="ml-2 font-semibold text-charcoal">
+                          ${m.total_estimated.toFixed(2)}
+                        </span>
+                      )}
+                    </span>
+                  </li>
                 ))}
-                {materials.length > 30 && (
-                  <span className="text-[11px] text-warm-gray">
-                    +{materials.length - 30} more
-                  </span>
+                {materials.length > 12 && (
+                  <li className="pt-1.5 text-[11px] text-warm-gray">
+                    +{materials.length - 12} more on the shopping list
+                  </li>
                 )}
-              </div>
+              </ul>
             )}
           </section>
         </div>
