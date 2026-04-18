@@ -12,6 +12,7 @@ import {
 } from "react-icons/fi";
 import { createClient } from "@/lib/supabase/client";
 import PlanReview, { type PlanPreview } from "./PlanReview";
+import { PlanGeneratingScreen } from "./PlanGeneratingScreen";
 
 interface QuickPick {
   label: string;
@@ -202,6 +203,11 @@ export function IntakeChat({
   async function handleGeneratePlan() {
     setGenerating(true);
     setError(null);
+    // Hard 90s client timeout — the server can take 15-30s on a complex
+    // plan; anything longer means something's wrong and we'd rather show
+    // an error than spin forever.
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 90_000);
     try {
       const res = await fetch("/api/ai/draft-plan", {
         method: "POST",
@@ -211,17 +217,28 @@ export function IntakeChat({
           useIntake: true,
           preview: true,
         }),
+        signal: controller.signal,
       });
       if (!res.ok) {
         const j = await res.json().catch(() => ({}));
-        throw new Error(j.error || "Plan draft failed.");
+        throw new Error(j.error || `Plan draft failed (${res.status}).`);
       }
       const data = await res.json();
       if (data.mock) setIsMock(true);
+      if (!data.plan) {
+        throw new Error("No plan returned. Try again or refine your intake.");
+      }
       setPreview(data.plan as PlanPreview);
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Couldn't draft a plan.");
+      if (e instanceof DOMException && e.name === "AbortError") {
+        setError(
+          "The plan took longer than 90 seconds. The AI may be overloaded — try again."
+        );
+      } else {
+        setError(e instanceof Error ? e.message : "Couldn't draft a plan.");
+      }
     } finally {
+      clearTimeout(timeoutId);
       setGenerating(false);
     }
   }
@@ -284,6 +301,21 @@ export function IntakeChat({
         )
       )
     : 0;
+
+  // While generating, show the engaging loading screen instead of a tiny
+  // spinner inside a button.
+  if (generating) {
+    return (
+      <div className="flex flex-col gap-4">
+        <PlanGeneratingScreen projectName={projectName} />
+        {error && (
+          <div className="rounded-lg bg-red-50 border border-red-200 p-3 text-xs text-red-700">
+            {error}
+          </div>
+        )}
+      </div>
+    );
+  }
 
   // When a preview is ready, show the review in place of the chat.
   if (preview) {
@@ -525,38 +557,32 @@ export function IntakeChat({
           </button>
         </form>
       ) : (
-        <div className="rounded-2xl bg-sage/10 border border-sage/30 p-4 space-y-3">
-          <p className="text-sm text-charcoal">
-            Got everything I need. Want me to draft the plan now?
+        <div className="rounded-2xl bg-moss/10 border border-moss/30 p-5 space-y-3">
+          <p className="font-hand text-xl text-walnut">
+            anything else you&apos;d like included before I draft this?
           </p>
-          <div className="flex flex-wrap items-center gap-2">
+          <p className="text-sm text-graphite">
+            If yes, keep typing below — I&apos;ll add it. If you&apos;re ready, draft the plan.
+          </p>
+          <div className="flex flex-wrap items-center gap-2 pt-1">
             <button
               onClick={handleGeneratePlan}
-              disabled={generating}
-              className="inline-flex items-center gap-2 rounded-lg bg-sage hover:bg-sage-dark text-white font-semibold text-sm px-4 py-2 transition-colors disabled:opacity-50"
+              className="inline-flex items-center gap-2 rounded-lg bg-walnut hover:bg-walnut-dark text-white font-semibold text-sm px-4 py-2 transition-colors"
             >
-              {generating ? (
-                <>
-                  <FiLoader className="h-4 w-4 animate-spin" />
-                  Drafting…
-                </>
-              ) : (
-                <>Draft my plan →</>
-              )}
+              Draft my plan →
+            </button>
+            <button
+              onClick={() => setComplete(false)}
+              className="inline-flex items-center gap-1.5 rounded-lg border border-hairline bg-paper hover:border-walnut text-ink text-sm font-semibold px-3 py-2 transition-colors"
+            >
+              Continue the conversation
             </button>
             <Link
               href={`/projects/project/${projectId}`}
-              className="text-sm text-warm-gray hover:text-charcoal px-3 py-2"
+              className="text-sm text-graphite hover:text-ink px-3 py-2"
             >
               Skip for now
             </Link>
-            <button
-              onClick={handleRestart}
-              className="text-sm text-warm-gray hover:text-charcoal px-3 py-2 inline-flex items-center gap-1"
-            >
-              <FiRefreshCw className="h-3.5 w-3.5" />
-              Redo intake
-            </button>
           </div>
         </div>
       )}

@@ -1,5 +1,6 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { createClient } from "@/lib/supabase/server";
+import { parseStructuredResponse } from "@/lib/ai/parseStructuredResponse";
 
 function getAnthropicClient() {
   const apiKey = process.env.ANTHROPIC_API_KEY;
@@ -269,10 +270,11 @@ Skip permits: ${project.skip_permits === true}
 Return the COMPLETE revised plan. Be surgical — only change what the user asked to change.`;
 
   try {
+    // Haiku 4.5 — see draft-plan/route.ts for rationale (Sonnet was hitting
+    // 4-9min response times on this shape).
     const response = await client.messages.create({
-      model: "claude-sonnet-4-6",
+      model: "claude-haiku-4-5",
       max_tokens: 16000,
-      thinking: { type: "adaptive" },
       system: SYSTEM_PROMPT,
       output_config: {
         format: {
@@ -283,11 +285,7 @@ Return the COMPLETE revised plan. Be surgical — only change what the user aske
       messages: [{ role: "user", content: userMessage }],
     });
 
-    const textBlock = response.content.find((b) => b.type === "text");
-    if (!textBlock || textBlock.type !== "text") {
-      throw new Error("No text response");
-    }
-    const parsed = JSON.parse(textBlock.text);
+    const parsed = parseStructuredResponse<Plan>(response, "revise");
     return Response.json({ ok: true, plan: parsed });
   } catch (error) {
     console.error("Revise plan error:", error);

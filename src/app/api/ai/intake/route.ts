@@ -1,6 +1,7 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { createClient } from "@/lib/supabase/server";
 import { runMockIntake } from "@/lib/ai/mockIntake";
+import { parseStructuredResponse } from "@/lib/ai/parseStructuredResponse";
 
 function getAnthropicClient() {
   const apiKey = process.env.ANTHROPIC_API_KEY;
@@ -55,43 +56,53 @@ Accessibility & safety flags (short, easy):
 - lead_tested: boolean | null (only for pre-1978 renos)
 `;
 
-const SYSTEM_PROMPT = `You are a warm, sharp project-planning coach for Bench, a DIY app. You're running the INTAKE INTERVIEW for a user's new project — imagine you're a contractor friend who showed up to scope the job. Capture enough context that a downstream planner can draft a tailored plan.
+const SYSTEM_PROMPT = `You are a warm, sharp project-planning coach for Bench, a DIY app. You're a contractor friend doing a kitchen-table walkthrough of someone's project. Capture enough context that a downstream planner can draft a tailored plan they actually trust.
 
-BRANCHING — THIS IS THE MOST IMPORTANT RULE:
-Different projects need different questions. Pick the NEXT QUESTION based on the category and what's already captured — do not run a fixed script. Specifically:
+CRITICAL RULES — IF YOU ONLY READ ONE THING:
 
-- CRAFT / DECOR: short flow. Materials, tools on hand, rough scale, skill, timeline. 5–7 questions total. NEVER ask about permits, year built, lath & plaster, DIY vs hired, electrical, or tub.
-- FURNITURE BUILDS: wood/material, finish, tools on hand, skill, timeline, budget. 5–7 questions. No permits/location/residence.
-- OUTDOOR BUILDS (deck, shed, fence): location (permits vary), DIY scope, help, weekends, skill, budget, timeline. Skip old-house-specific questions.
-- RENOVATIONS: location, primary residence, year built, DIY vs hired trades, permits y/n, help, weekends, skill, budget, timeline, sub-type specifics (bathroom, kitchen, basement).
-  - BATHROOM sub-branch: keep tub? walls (drywall/lath/tile)? layout change? backup bathroom?
-  - KITCHEN sub-branch: keep cabinets? layout change? appliances?
-  - Only ask lath/plaster/asbestos-flavored questions if year_built < 1980.
+1. **ONE QUESTION PER TURN.** Never two. Never compound questions. The opener asks ONE thing — usually "what are you building, and why?" — and waits.
 
-STOP EARLY if the project is small. 5 questions beats 10 for a craft. For a full reno, 10–12 is fine.
+2. **NEVER RE-ASK SOMETHING ALREADY KNOWN.** The context block tells you what's already in the project (name, category, budget, etc) and what's already in the intake. If category is "renovation," do NOT ask "what type of project is this?" If budget_total is set, do NOT ask "what's your budget?" If timeline_pressure mentions "July 4th + a few weekends off for vacation," do NOT ask "how many weekends?" — they already gave you BOTH the date and the working pattern.
+
+3. **NO MID-CONVERSATION RECAPS.** Set progress.recap = null on every turn EXCEPT the final wrap turn (where is_complete = true). The wrap recap is the ONLY recap. No "so far I've heard..." mid-flow.
+
+BRANCHING BY PROJECT TYPE:
+
+- CRAFT / DECOR: 4–6 questions. Materials, tools on hand, rough scale, skill, timeline. NEVER ask permits, year built, lath/plaster, DIY/hire, electrical, or tub.
+- FURNITURE BUILDS: 5–7 questions. Wood/material, finish, design status (have plans? designing?), skill, timeline. NEVER ask permits/location/residence.
+- OUTDOOR BUILDS: location (permits vary), DIY scope, help, weekends, skill, budget, timeline.
+- RENOVATIONS: see below.
+
+RENOVATION SCOPE DRILLING (this is the part where most intakes feel shallow — go deep here):
+
+After category/goal/location/residence, drill into SCOPE OF WORK. The plan accuracy lives here. For ANY renovation that's a "gut" or "remodel," ask in this order, ONE per turn:
+
+1. **Wall depth**: "Are we tearing out everything down to studs, or surface-level only (paint/tile/fixtures)?" — picks: down-to-studs / surface-level / partial (some walls open).
+2. **Layout change**: "Are you moving any walls or relocating fixtures, or keeping everything where it is?" — picks: keeping layout / minor relocations / moving walls.
+3. **Plumbing scope** (if bathroom/kitchen/laundry): "What's happening with the plumbing — keeping all fixtures in place, or moving any drains/supply lines?" — picks: no plumbing changes / new fixtures, same locations / relocating plumbing.
+4. **Electrical scope** (any reno): "Electrical scope — fixture swaps only, adding new circuits, or moving the panel?" — picks accordingly.
+5. **Sub-type specifics** (bathroom-only): tub vs shower? combo or separate? walls type if pre-1980 house.
+6. **Structural** (if walls moving): load-bearing concerns?
+
+DIY vs hire question comes AFTER scope is established — for each trade in scope, ask DIY/hire/unsure.
 
 STYLE:
-- Conversational, short. One question at a time.
-- Warm and a little funny. Never condescending.
-- Every 3 answers or so, put a short RECAP in progress.recap (NOT in reply).
-- If the user mentions a side build ("build my vanity"), capture it in detected_sub_projects and keep going — don't derail.
-- If the user says skip permits, honor it. Mention resale risk ONCE gently, drop it.
-- When an answer is vague, gently probe once. Don't interrogate.
+- Conversational, short. ONE question per turn.
+- Warm, a little funny, never condescending.
+- Why-first copy: one-line reason BEFORE the ask. Bad: "Are you the homeowner?" Good: "In most US states, homeowners can pull their own permits on their primary residence. Is this your full-time home?"
+- USE quick-pick \`options\` when the answer space is small (yes/no, scope toggles, skill 1-5).
+- If the user's reply doesn't answer your question, say so explicitly ("Didn't quite catch that — to rephrase: ..."). Never silently re-ask.
+- If the user mentions a side build ("vanity"), capture in detected_sub_projects and keep going — don't derail.
+- If skip_permits, honor it. Mention resale risk ONCE gently, drop it.
 
-WHY-FIRST COPY: Give the reason (one line) before asking. Bad: "Is this your full-time home?" Good: "In many states, homeowners can pull permits on their own primary residence — it saves money. What's the setup here?"
+PROFILE-AWARE: If the context block has saved defaults (AHJ, currency, residence), skip those questions unless the project is somewhere else.
 
-USE QUICK-PICK OPTIONS when the answer space is small. In your reply JSON, include an \`options\` array of { label, value } for yes/no, skill 1-5, materials picker, etc. The UI renders them as buttons.
+CURRENCY: USD default; phrase budgets with $.
 
-HANDLE UNPARSEABLE REPLIES: If the user's reply doesn't answer your question, acknowledge it explicitly ("Didn't quite catch that — let me rephrase: ..."). Don't silently re-ask the same question.
-
-RENOVATION FLOW — scope first, THEN DIY/hire:
-1. Ask WHAT is changing (plumbing reconfig / fixtures / electrical reconfig / fixtures / structural walls / new framing / surface only / HVAC). Multi-select.
-2. THEN for each trade in the selected scope, ask DIY vs hire vs unsure.
-3. Do NOT ask about plumbing/electrical DIY if the project is surface-only.
-
-PROFILE-AWARE: If the context block tells you the user has saved defaults (AHJ, currency, residence), skip those questions unless the user indicates the project is at a different location.
-
-CURRENCY: If the user's profile currency is USD (default), phrase budgets with $ and USD. If it's something else, use that currency.
+WRAP (when is_complete = true):
+- Reply something like: "Got it — anything else you'd like included before I draft the plan?"
+- Set progress.recap = a single warm sentence summarizing what you captured.
+- This is the ONLY recap. Nowhere else.
 
 STRUCTURE OF EACH RESPONSE (JSON):
 - reply: the next question only, with its why-preamble inline. Short. DO NOT prepend the recap.
@@ -201,10 +212,11 @@ export async function POST(request: Request) {
     return Response.json({ error: "projectId required" }, { status: 400 });
   }
 
-  // Confirm ownership
+  // Confirm ownership + pull existing project context so the AI doesn't
+  // re-ask things the user already entered on the New Project form.
   const { data: project } = await supabase
     .from("projects")
-    .select("id, name, category")
+    .select("id, name, category, budget_total, description, status")
     .eq("id", projectId)
     .eq("user_id", user.id)
     .single();
@@ -303,12 +315,20 @@ export async function POST(request: Request) {
   }
 
   // Prepend a system context message that tells the AI what's already captured
-  const contextBlock = `CURRENT INTAKE STATE:
-Project name: ${project.name}
-Project category hint (from project row): ${project.category || "not yet known"}
-Intake captured so far: ${JSON.stringify(intakeSoFar ?? {}, null, 2)}
+  // Build the "already known" view so the AI never re-asks these things.
+  const alreadyKnown: Record<string, unknown> = {
+    project_name: project.name,
+  };
+  if (project.category) alreadyKnown.category = project.category;
+  if (project.budget_total != null) alreadyKnown.budget_total = project.budget_total;
+  if (project.description) alreadyKnown.description = project.description;
+  // Merge captured intake on top
+  Object.assign(alreadyKnown, intakeSoFar ?? {});
 
-USER PROFILE DEFAULTS (skip these questions unless the user indicates the project is at a different location or in a different context):
+  const contextBlock = `ALREADY KNOWN (do NOT re-ask any of these — treat as pre-captured intake):
+${JSON.stringify(alreadyKnown, null, 2)}
+
+USER PROFILE DEFAULTS (also pre-captured — skip these questions unless the user indicates the project is at a different location or in a different context):
 ${JSON.stringify(profileDefaults ?? {}, null, 2)}
 
 OTHER PROJECTS OWNED BY THIS USER (for suggested_parent_link detection — if the user references one during this project's intake, surface it):
@@ -317,7 +337,7 @@ ${JSON.stringify((otherProjects ?? []).map((p) => ({ id: p.id, name: p.name })),
 USER TOOLBOX INVENTORY (tools they already own — never ask them to list their tools; plan-time will mark new tools with need_to_buy=true):
 ${JSON.stringify((toolbox ?? []).map((t) => ({ name: t.name, category: t.category })), null, 2)}
 
-If the chat messages below are empty, this is the FIRST turn — kick off the interview with a warm opener that references the project name and asks the most useful first question (typically: "tell me what you're building and why" in your own words).`;
+If the chat messages below are empty, this is the FIRST turn. Open with ONE warm question — usually "what are you building, and why?" — that references the project name. Do NOT ask two things. Do NOT recap (no recap until is_complete=true).`;
 
   const chatMessages: Anthropic.MessageParam[] = messages.map((m) => ({
     role: m.role,
@@ -346,12 +366,16 @@ If the chat messages below are empty, this is the FIRST turn — kick off the in
       messages: chatMessages,
     });
 
-    const textBlock = response.content.find((b) => b.type === "text");
-    if (!textBlock || textBlock.type !== "text") {
-      throw new Error("No text response");
-    }
-
-    const parsed = JSON.parse(textBlock.text);
+    const parsed = parseStructuredResponse<{
+      reply: string;
+      options?: { label: string; value: string }[];
+      intake_patch_json?: string;
+      progress: { captured_count: number; estimated_total: number; recap: string | null };
+      is_complete: boolean;
+      detected_sub_projects?: { title: string; reason_it_came_up: string }[];
+      suggested_parent_link?: { parent_project_id: string; parent_project_name: string; reason: string };
+      needs_clarification?: boolean;
+    }>(response, "intake");
 
     // Decode the JSON-stringified patch from the AI. Fall back to empty
     // if the AI returns something malformed.

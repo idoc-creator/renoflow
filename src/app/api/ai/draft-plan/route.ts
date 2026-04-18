@@ -1,6 +1,7 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { createClient } from "@/lib/supabase/server";
 import { insertStagesAndSteps } from "@/lib/projects/insertStagesAndSteps";
+import { parseStructuredResponse } from "@/lib/ai/parseStructuredResponse";
 import { runMockDraftPlan } from "@/lib/ai/mockDraftPlan";
 
 function getAnthropicClient() {
@@ -276,10 +277,14 @@ Include an empty suggested_milestones array unless permits/inspections obviously
   }
 
   try {
+    // Haiku 4.5 with the structured-output schema — fast (10-25s typical)
+    // and the schema enforces quality. Sonnet was 4-9 MINUTES on the same
+    // request because of the deeply-nested schema; with no thinking budget
+    // and a tight token cap, Haiku produces the same shape much faster
+    // and without the truncation-mid-string failures we saw on Sonnet.
     const response = await client.messages.create({
-      model: "claude-sonnet-4-6",
+      model: "claude-haiku-4-5",
       max_tokens: 16000,
-      thinking: { type: "adaptive" },
       system: SYSTEM_PROMPT,
       output_config: {
         format: {
@@ -290,12 +295,29 @@ Include an empty suggested_milestones array unless permits/inspections obviously
       messages: [{ role: "user", content: userMessage }],
     });
 
-    const textBlock = response.content.find((b) => b.type === "text");
-    if (!textBlock || textBlock.type !== "text") {
-      throw new Error("No text response from AI");
+    interface ParsedPlan {
+      stages: Array<{
+        title: string;
+        description: string;
+        reason: string;
+        estimated_cost: number;
+        estimated_hours: number;
+        steps: Array<{
+          title: string;
+          description: string;
+          skill_level: string;
+          estimated_minutes: number;
+          tools_needed: string[];
+        }>;
+      }>;
+      suggested_milestones?: Array<{
+        title: string;
+        kind: string;
+        notes: string;
+        blocks_stage_index: number | null;
+      }>;
     }
-
-    const parsed = JSON.parse(textBlock.text);
+    const parsed = parseStructuredResponse<ParsedPlan>(response, "draft-plan");
 
     if (preview) {
       return Response.json({
@@ -318,7 +340,7 @@ Include an empty suggested_milestones array unless permits/inspections obviously
 
     // Re-fetch just-inserted stages so we can resolve blocks_stage_index → stage_id
     if (
-      parsed.suggested_milestones?.length > 0 &&
+      (parsed.suggested_milestones?.length ?? 0) > 0 &&
       project.skip_permits !== true
     ) {
       const { data: insertedStages } = await supabase
@@ -328,7 +350,7 @@ Include an empty suggested_milestones array unless permits/inspections obviously
         .order("sort_order", { ascending: true });
 
       const stagesList = insertedStages ?? [];
-      const milestonesToInsert = parsed.suggested_milestones.map(
+      const milestonesToInsert = (parsed.suggested_milestones ?? []).map(
         (
           m: {
             title: string;

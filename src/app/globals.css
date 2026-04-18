@@ -108,6 +108,15 @@ h3 { font-size: 1.25rem; line-height: 1.3; }
   font-weight: 500;
 }
 
+/* Fade-in for cycling status messages on the plan-generating screen */
+@keyframes bench-fade-in {
+  from { opacity: 0; transform: translateY(4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.animate-fade-in {
+  animation: bench-fade-in 320ms ease-out;
+}
+
 /* ─── Bullet-journal / handwritten accents ─────────────────────────────
    Flavor only. Never for body copy or structural headings. Use for pull
    quotes, greetings, hand-labels, rotated notes. See docs/design-system.md.
