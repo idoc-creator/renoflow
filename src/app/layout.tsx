@@ -1,26 +1,56 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Inter_Tight, Fraunces, Caveat } from "next/font/google";
 import "./globals.css";
 
-const inter = Inter({
-  variable: "--font-inter",
+/*
+  Fonts per docs/design-system.md:
+  - Display: Fraunces (variable serif) — editorial bold headlines
+  - Body: Inter Tight — tighter humanist sans, reads bolder than plain Inter
+
+  Old vars --font-inter and --font-instrument-serif are aliased in globals.css
+  so lingering references keep working until fully migrated.
+*/
+const interTight = Inter_Tight({
+  variable: "--font-inter-tight",
   subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+});
+
+const fraunces = Fraunces({
+  variable: "--font-fraunces",
+  subsets: ["latin"],
+  // Variable font — pulls 100-900 range. Axes unlock SOFT + WONK for subtle
+  // editorial tuning in specific components later (e.g., display headlines).
+  axes: ["SOFT", "WONK", "opsz"],
+});
+
+/*
+  Caveat is the bullet-journal / handwritten-accent font. Used sparingly
+  as flavor (pull quotes, welcome notes, hand-drawn labels) — never for
+  body copy or structural headings. See docs/design-system.md for rules.
+*/
+const caveat = Caveat({
+  variable: "--font-caveat",
+  subsets: ["latin"],
+  weight: ["400", "600", "700"],
 });
 
 export const metadata: Metadata = {
-  title: "RenoFlow — Plan Your DIY Renovation",
+  title: "Bench — Stop Pinning. Start Building.",
   description:
-    "AI-powered renovation planning. Break your project into stages, track savings, and earn money sharing your build. Start free.",
+    "The platform where DIYers browse inspo, grab templates, plan projects, and build the thing. From bathroom remodels to handmade jewelry.",
   keywords: [
-    "DIY renovation",
-    "home remodel planner",
-    "renovation cost estimator",
-    "DIY project planner",
+    "DIY",
+    "maker",
+    "home improvement",
+    "craft projects",
+    "project planner",
+    "build templates",
   ],
   openGraph: {
-    title: "RenoFlow — Plan Your DIY Renovation",
+    title: "Bench — Stop Pinning. Start Building.",
     description:
-      "AI-powered renovation planning. Save thousands doing it yourself.",
+      "Browse, plan, build, and share DIY projects of every kind.",
     type: "website",
   },
 };
@@ -31,8 +61,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${inter.variable} h-full antialiased`}>
-      <body className="min-h-full flex flex-col font-sans">
+    <html
+      lang="en"
+      className={`${interTight.variable} ${fraunces.variable} ${caveat.variable} h-full antialiased`}
+    >
+      <body className="min-h-full flex flex-col font-sans bg-paper text-ink">
         {children}
         <script
           dangerouslySetInnerHTML={{

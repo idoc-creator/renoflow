@@ -1,9 +1,195 @@
 @import "tailwindcss";
 
+/*
+  Bench design tokens — "Field Notes" palette.
+  See docs/design-system.md for the spec.
+
+  Source of truth. Never hard-code a color or font in a component — use a
+  token. If you need a color that isn't here, add it here first.
+*/
 @theme inline {
-  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
-  --color-teal-600: #0d9488;
-  --color-teal-700: #0f766e;
-  --color-amber-500: #f59e0b;
-  --color-slate-50: #f8fafc;
+  /* Fonts */
+  --font-sans: var(--font-inter-tight), var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-serif: var(--font-fraunces), var(--font-instrument-serif), ui-serif, Georgia, serif;
+  --font-hand: var(--font-caveat), ui-serif, cursive;
+
+  /* Neutrals — pure-white paper + warm walnut ink */
+  --color-paper: #ffffff;
+  --color-ivory: #faf7f0;
+  --color-cream: #faf7f0;            /* alias — existing bg-cream → ivory */
+  --color-surface: #ffffff;
+  --color-ink: #1a110a;
+  --color-charcoal: #1a110a;         /* alias */
+  --color-graphite: #6b5d51;
+  --color-warm-gray: #6b5d51;        /* alias */
+  --color-hairline: #e8e0d1;
+  --color-border-warm: #e8e0d1;      /* alias */
+
+  /* Iconic — rich walnut brown (deep espresso, warm + saturated) */
+  --color-walnut: #4a2b17;
+  --color-walnut-dark: #2a1608;
+  --color-terracotta: #4a2b17;       /* alias — primary CTAs → walnut */
+  --color-terracotta-dark: #2a1608;  /* alias */
+  --color-warm-brown: #4a2b17;       /* alias */
+
+  /* Supporting warm earth accents */
+  --color-brass: #b5874e;
+  --color-honey: #c9935b;
+  --color-moss: #6b7d4a;
+  --color-moss-dark: #4c5c32;
+  --color-sage: #6b7d4a;             /* alias — bg-sage → moss */
+  --color-sage-dark: #4c5c32;        /* alias */
+
+  /* Reserved for destructive actions only */
+  --color-oxblood: #7a2e2e;
+}
+
+/* Paper grid utility — very muted notebook texture. Used as the default
+   Projects page background (white + whisper gridlines). Safe everywhere since
+   the opacity is low enough to sit behind images and text. */
+.bg-grid {
+  /* True bullet-journal dot grid — not lines */
+  background-image: radial-gradient(
+    circle,
+    rgba(26, 17, 10, 0.13) 1px,
+    transparent 1.2px
+  );
+  background-size: 22px 22px;
+  background-position: 0 0;
+}
+
+body {
+  background-color: var(--color-paper);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  font-weight: 500;              /* 500 reads cleaner than default 400 at small sizes */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Display type: Fraunces, 600 by default, tight tracking */
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-serif);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: var(--color-ink);
+}
+
+h1 { font-size: 2rem; line-height: 1.15; }
+h2 { font-size: 1.5rem; line-height: 1.2; }
+h3 { font-size: 1.25rem; line-height: 1.3; }
+
+/* Display helpers for hero sections */
+.font-display-xl {
+  font-family: var(--font-serif);
+  font-weight: 600;
+  font-size: 3.5rem;
+  line-height: 1.05;
+  letter-spacing: -0.025em;
+}
+.font-display-lg {
+  font-family: var(--font-serif);
+  font-weight: 600;
+  font-size: 2.5rem;
+  line-height: 1.1;
+  letter-spacing: -0.025em;
+}
+.font-display {
+  font-family: var(--font-serif);
+  font-weight: 600;
+  font-size: 1.75rem;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+}
+
+.text-caption {
+  font-size: 0.75rem;
+  line-height: 1.4;
+  font-weight: 500;
+}
+
+/* Fade-in for cycling status messages on the plan-generating screen */
+@keyframes bench-fade-in {
+  from { opacity: 0; transform: translateY(4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.animate-fade-in {
+  animation: bench-fade-in 320ms ease-out;
+}
+
+/* ─── Bullet-journal / handwritten accents ─────────────────────────────
+   Flavor only. Never for body copy or structural headings. Use for pull
+   quotes, greetings, hand-labels, rotated notes. See docs/design-system.md.
+*/
+
+/* Handwritten script — scale one notch up because Caveat reads smaller */
+.font-hand {
+  font-family: var(--font-hand);
+  font-weight: 600;
+  letter-spacing: 0;
+  line-height: 1.2;
+}
+.font-hand-lg {
+  font-family: var(--font-hand);
+  font-weight: 700;
+  font-size: 2rem;
+  line-height: 1.1;
+  letter-spacing: -0.005em;
+}
+
+/* Circular stamp badge — like the "ABOUT ME · ABOUT ME ·" wheel on Etta's */
+.stamp {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 6rem;
+  height: 6rem;
+  border-radius: 9999px;
+  border: 2px solid var(--color-walnut);
+  color: var(--color-walnut);
+  background: var(--color-paper);
+  text-align: center;
+  font-family: var(--font-hand);
+  font-weight: 700;
+  font-size: 1.1rem;
+  line-height: 1.05;
+  transform: rotate(-6deg);
+}
+
+/* Subtle image rotations used on polaroid-style photo cards */
+.rotate-nudge-left  { transform: rotate(-2.5deg); }
+.rotate-nudge-right { transform: rotate(2.5deg); }
+
+/* Washi tape — translucent warm strip used to "tape down" photo corners
+   and section crossings. Use with absolute positioning + slight rotation. */
+.washi-tape {
+  position: absolute;
+  height: 22px;
+  background-color: rgba(181, 135, 78, 0.55);         /* brass translucent */
+  background-image: repeating-linear-gradient(
+    45deg,
+    rgba(255, 255, 255, 0.18) 0 4px,
+    transparent 4px 8px
+  );
+  box-shadow: 0 1px 2px rgba(26, 17, 10, 0.08);
+  pointer-events: none;
+}
+.washi-tape.washi-moss {
+  background-color: rgba(107, 125, 74, 0.55);          /* moss translucent */
+}
+.washi-tape.washi-honey {
+  background-color: rgba(201, 147, 91, 0.55);          /* honey translucent */
+}
+
+/* Hand-drawn underline — for emphasizing key phrases in running copy */
+.underline-hand {
+  background-image: linear-gradient(
+    to right,
+    var(--color-walnut) 0%,
+    var(--color-walnut) 100%
+  );
+  background-repeat: no-repeat;
+  background-position: 0 95%;
+  background-size: 100% 6px;
+  padding-bottom: 2px;
 }

@@ -2,10 +2,10 @@ import type { MetadataRoute } from "next";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "RenoFlow",
-    short_name: "RenoFlow",
+    name: "Bench",
+    short_name: "Bench",
     description: "Plan your DIY renovation",
-    start_url: "/dashboard",
+    start_url: "/projects",
     display: "standalone",
     background_color: "#f8fafc",
     theme_color: "#0d9488",

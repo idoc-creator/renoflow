@@ -53,7 +53,7 @@ export async function POST(request: Request) {
         price_data: {
           currency: "usd",
           product_data: {
-            name: `RenoFlow ${plan.name}`,
+            name: `Bench ${plan.name}`,
             description: plan.features.join(", "),
           },
           unit_amount: plan.price,
@@ -62,7 +62,7 @@ export async function POST(request: Request) {
         quantity: 1,
       },
     ],
-    success_url: `${baseUrl}/dashboard?upgraded=true`,
+    success_url: `${baseUrl}/projects?upgraded=true`,
     cancel_url: `${baseUrl}/pricing`,
     metadata: {
       user_id: user.id,
